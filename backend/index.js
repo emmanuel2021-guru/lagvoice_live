@@ -30,19 +30,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'LagVoice backend is running with Prisma & PostgreSQL' });
 });
 
-// Error handling middleware
-app.use(errorHandler);
-
 // Serve static frontend
 const frontendPath = path.join(__dirname, '../dist');
 app.use(express.static(frontendPath));
 
-// Fallback to index.html for SPA routing
-app.get('*', (req, res) => {
+// Fallback to index.html for SPA routing (Express 5 regex)
+app.get(/(.*)/, (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
+
+// Error handling middleware
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
