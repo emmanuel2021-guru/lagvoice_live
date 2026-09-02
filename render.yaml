@@ -2,6 +2,7 @@ services:
   - type: web
     name: lagvoice-web
     env: node
+    plan: free
     buildCommand: npm install && npm run build && cd backend && npm install && npx prisma generate
     startCommand: npm start
     envVars:
