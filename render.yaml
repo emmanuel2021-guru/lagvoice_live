@@ -12,8 +12,9 @@ services:
       - key: JWT_SECRET
         generateValue: true
 
-  - type: psql
-    name: lagvoice-db
+databases:
+  - name: lagvoice-db
     databaseName: lagvoice
     user: lagvoice_user
     plan: free
+
