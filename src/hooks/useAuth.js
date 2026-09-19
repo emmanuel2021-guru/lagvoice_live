@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useCallback } from 'react'
-import { loginUser, registerUser, logout, clearError } from '../store/authSlice'
+import { loginUser, registerUser, logout, clearError, updateUser } from '../store/authSlice'
 import { authService } from '../services/authService'
 import { ROLES } from '../utils/constants'
 
@@ -29,6 +29,17 @@ export function useAuth() {
     [dispatch]
   )
 
+  const updateProfile = useCallback(
+    async (userData) => {
+      const response = await authService.updateProfile(userData)
+      if (response.success) {
+        dispatch(updateUser(response.user))
+      }
+      return response
+    },
+    [dispatch]
+  )
+
   const logoutUser = useCallback(() => {
     authService.logout()
     dispatch(logout())
@@ -50,6 +61,7 @@ export function useAuth() {
     error,
     login,
     registerUser: register,
+    updateProfile,
     logout: logoutUser,
     clearError: clearAuthError,
     isStudent,

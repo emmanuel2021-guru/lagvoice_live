@@ -120,3 +120,33 @@ exports.getMe = async (req, res, next) => {
   }
 };
 
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { name, department, faculty, studentId, staffId } = req.body;
+    
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        ...(name && { name }),
+        ...(department !== undefined && { department }),
+        ...(faculty !== undefined && { faculty }),
+        ...(studentId !== undefined && { studentId }),
+        ...(staffId !== undefined && { staffId })
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        studentId: true,
+        staffId: true,
+        department: true,
+        faculty: true
+      }
+    });
+
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    next(err);
+  }
+};

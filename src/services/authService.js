@@ -44,6 +44,14 @@ export const authService = {
     return { success: true }
   },
 
+  async updateProfile(userData) {
+    const response = await api.put('/auth/me', userData)
+    if (response.success) {
+      localStorage.setItem('lagvoice_user', JSON.stringify(response.user))
+    }
+    return response
+  },
+
   getCurrentUser() {
     const token = localStorage.getItem('lagvoice_token')
     const userStr = localStorage.getItem('lagvoice_user')
