@@ -46,7 +46,11 @@ exports.register = async (req, res, next) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        studentId: user.studentId,
+        staffId: user.staffId,
+        department: user.department,
+        faculty: user.faculty
       }
     });
   } catch (err) {
@@ -84,6 +88,8 @@ exports.login = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        studentId: user.studentId,
+        staffId: user.staffId,
         department: user.department,
         faculty: user.faculty
       }
