@@ -24,6 +24,7 @@ const AdminComplaints = lazy(() => import('./pages/AdminComplaints'))
 const AdminPolls = lazy(() => import('./pages/AdminPolls'))
 const AdminReports = lazy(() => import('./pages/AdminReports'))
 const StudentPolls = lazy(() => import('./pages/StudentPolls'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 
 // Loading fallback
 function PageLoader() {
@@ -112,7 +113,7 @@ export default function App() {
           path="/student/profile"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout><PlaceholderPage title="Profile" /></StudentLayout>
+              <StudentLayout><ProfilePage /></StudentLayout>
             </ProtectedRoute>
           }
         />
@@ -170,7 +171,7 @@ export default function App() {
           path="/admin/settings"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout><PlaceholderPage title="Settings" /></AdminLayout>
+              <AdminLayout><ProfilePage /></AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -181,6 +182,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['faculty']}>
               <AdminLayout><FacultyDashboard /></AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/settings"
+          element={
+            <ProtectedRoute allowedRoles={['faculty']}>
+              <AdminLayout><ProfilePage /></AdminLayout>
             </ProtectedRoute>
           }
         />

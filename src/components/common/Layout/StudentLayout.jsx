@@ -109,6 +109,7 @@ export default function StudentLayout({ children }) {
         {/* Bottom icons */}
         <div className="flex flex-col items-center gap-1 pb-6">
           <button
+            onClick={() => navigate('/student/profile')}
             className="w-11 h-11 rounded-xl flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/8 transition-all duration-200"
             aria-label="Settings"
             title="Settings"
