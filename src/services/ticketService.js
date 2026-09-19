@@ -41,6 +41,10 @@ export const ticketService = {
     })
   },
 
+  async updateStatus(id, status) {
+    return api.put(`/tickets/${id}/status`, { status });
+  },
+
   async addComment(ticketId, comment) {
     const response = await api.post(`/tickets/${ticketId}/comments`, { message: comment })
     return response.comment

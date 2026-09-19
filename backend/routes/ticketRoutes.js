@@ -23,8 +23,8 @@ router.route('/:id')
 
 router.post('/:id/comments', addComment);
 
-// Only admins and faculty can update status
-router.put('/:id/status', authorize('admin', 'faculty'), updateTicketStatus);
+// Only admins, faculty, staff and non-staff can update status
+router.put('/:id/status', authorize('admin', 'faculty', 'staff', 'non-staff'), updateTicketStatus);
 
 module.exports = router;
 
