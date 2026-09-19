@@ -9,9 +9,8 @@ import Button from '../components/common/Button/Button'
 
 const ROLES = [
   { id: 'student', label: 'Student' },
-  { id: 'faculty', label: 'Faculty' },
-  { id: 'admin', label: 'Administrator' },
-  { id: 'external', label: 'External Stakeholder' },
+  { id: 'staff', label: 'Staff' },
+  { id: 'non-staff', label: 'Non Staff' },
 ]
 
 export default function LoginPage() {

@@ -60,11 +60,27 @@ export default function App() {
         <Route path="/register" element={<AuthPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Student Routes */}
+        {/* Student / Staff / Non-Staff Routes */}
         <Route
           path="/student"
           element={
-            <ProtectedRoute allowedRoles={['student']}>
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
+              <StudentLayout><StudentDashboard /></StudentLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
+              <StudentLayout><StudentDashboard /></StudentLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/non-staff"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
               <StudentLayout><StudentDashboard /></StudentLayout>
             </ProtectedRoute>
           }
@@ -72,7 +88,7 @@ export default function App() {
         <Route
           path="/student/feedback"
           element={
-            <ProtectedRoute allowedRoles={['student']}>
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
               <StudentLayout><FeedbackForm /></StudentLayout>
             </ProtectedRoute>
           }
@@ -80,7 +96,7 @@ export default function App() {
         <Route
           path="/student/tickets"
           element={
-            <ProtectedRoute allowedRoles={['student']}>
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
               <StudentLayout><TicketList /></StudentLayout>
             </ProtectedRoute>
           }
@@ -88,7 +104,7 @@ export default function App() {
         <Route
           path="/student/ticket/:id"
           element={
-            <ProtectedRoute allowedRoles={['student']}>
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
               <StudentLayout><TicketDetail /></StudentLayout>
             </ProtectedRoute>
           }
@@ -96,7 +112,7 @@ export default function App() {
         <Route
           path="/student/evaluations"
           element={
-            <ProtectedRoute allowedRoles={['student']}>
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
               <StudentLayout><EvaluationForm /></StudentLayout>
             </ProtectedRoute>
           }
@@ -104,7 +120,7 @@ export default function App() {
         <Route
           path="/student/polls"
           element={
-            <ProtectedRoute allowedRoles={['student']}>
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
               <StudentLayout><StudentPolls /></StudentLayout>
             </ProtectedRoute>
           }
@@ -112,7 +128,7 @@ export default function App() {
         <Route
           path="/student/profile"
           element={
-            <ProtectedRoute allowedRoles={['student']}>
+            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
               <StudentLayout><ProfilePage /></StudentLayout>
             </ProtectedRoute>
           }

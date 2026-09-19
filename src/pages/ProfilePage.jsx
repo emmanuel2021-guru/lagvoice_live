@@ -66,8 +66,8 @@ export default function ProfilePage() {
               <p className="text-[15px] font-medium text-ink">{user?.email || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold text-ink/40 uppercase tracking-widest mb-1">Student / Staff ID</p>
-              <p className="text-[15px] font-medium text-ink">{user?.studentId || 'N/A'}</p>
+              <p className="text-[11px] font-semibold text-ink/40 uppercase tracking-widest mb-1">ID Number</p>
+              <p className="text-[15px] font-medium text-ink">{user?.studentId || user?.staffId || user?.id || 'N/A'}</p>
             </div>
           </div>
         </div>
