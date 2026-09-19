@@ -106,3 +106,14 @@ export function formatPercentage(value, decimals = 1) {
   if (value === null || value === undefined) return '0%'
   return `${Number(value).toFixed(decimals)}%`
 }
+
+/**
+ * Get dynamic time-based greeting
+ * @returns {string} e.g., "Good morning"
+ */
+export function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}

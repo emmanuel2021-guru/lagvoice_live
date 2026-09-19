@@ -97,7 +97,7 @@ export default function AdminLayout({ children }) {
       `}>
         {/* Logo */}
         <div className="w-full flex justify-center pt-6 pb-4">
-          <img src="/images/logo-n.png" alt="LagVoice" className="w-14 h-14 rounded-2xl object-cover" />
+          <img src="/images/logo-n.png" alt="LagVoice" className="w-10 h-10 rounded-xl object-contain bg-white" />
         </div>
 
         {/* Nav icons */}

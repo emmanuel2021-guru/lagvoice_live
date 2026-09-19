@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { ticketService } from '../services/ticketService'
-import { formatRelativeTime } from '../utils/formatters'
+import { getGreeting, formatRelativeTime } from '../utils/formatters'
 import { TICKET_STATUS_CONFIG } from '../utils/constants'
 
 export default function StudentDashboard() {
@@ -56,7 +56,7 @@ export default function StudentDashboard() {
           <div>
             <p className="text-[12px] text-white/50 font-medium uppercase tracking-wider mb-1">Student Portal</p>
             <h1 className="text-[1.6rem] lg:text-[2rem] font-bold text-white leading-tight tracking-tight">
-              Good morning, {user?.name?.split(' ')[0] || 'Student'}
+              {getGreeting()}, {user?.name?.split(' ')[0] || 'Student'}
             </h1>
             <p className="text-[13px] text-white/45 mt-2">Here is what is happening with your feedback</p>
           </div>
