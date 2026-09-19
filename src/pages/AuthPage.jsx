@@ -14,10 +14,10 @@ const ROLES = [
   { id: 'external', label: 'External Stakeholder' },
 ]
 
-const DEPARTMENTS = [
-  'Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology',
-  'Engineering', 'Medicine', 'Law', 'Arts', 'Social Sciences',
-  'Management Sciences', 'Education', 'Environmental Sciences',
+const FACULTIES = [
+  'Arts', 'Basic Medical Sciences', 'Clinical Sciences', 'Dental Sciences',
+  'Education', 'Engineering', 'Environmental Sciences', 'Law', 'Management Sciences',
+  'Pharmacy', 'Science', 'Social Sciences'
 ]
 
 /* ── Floating preview card: Ticket Status ── */
@@ -98,7 +98,7 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     email: '', password: '', role: 'student', remember: false,
-    firstName: '', lastName: '', studentId: '', department: '',
+    firstName: '', lastName: '', studentId: '', department: '', faculty: '',
     confirmPassword: '', agreeTerms: false,
   })
 
@@ -131,12 +131,12 @@ export default function AuthPage() {
       <div className="flex-1 flex items-center justify-center p-8 sm:p-10 lg:p-12 min-h-screen">
         <div className="w-full max-w-[420px]">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-10 sm:mb-12">
-            <img src="/images/logo-n.png" alt="LagVoice" className="w-12 h-12 rounded-xl object-cover shadow-[0_2px_8px_rgba(128,0,0,0.15)]" />
+          <div className="flex items-center gap-4 mb-10 sm:mb-12">
+            <img src="/images/logo-n.png" alt="LagVoice" className="w-20 h-20 rounded-2xl object-cover shadow-[0_4px_12px_rgba(128,0,0,0.15)]" />
             <div>
-              <span className="text-ink font-bold text-lg tracking-tight">LagVoice</span>
-              <span className="text-ink/20 mx-1.5">·</span>
-              <span className="text-ink/30 text-[10px] tracking-widest uppercase font-medium">UNILAG QAS</span>
+              <span className="text-ink font-extrabold text-3xl tracking-tight">LagVoice</span>
+              <span className="text-ink/20 mx-1.5 text-xl">·</span>
+              <span className="text-ink/30 text-xs tracking-widest uppercase font-bold">UNILAG QAS</span>
             </div>
           </div>
 
@@ -387,6 +387,20 @@ export default function AuthPage() {
               </div>
 
               <div>
+                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Role</label>
+                <select name="role" value={form.role} onChange={handleChange}
+                  className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
+                    focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
+                    transition-all duration-200 appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.04)]
+                    bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')]
+                    bg-no-repeat bg-[right_12px_center]">
+                  <option value="student">Student</option>
+                  <option value="staff">Staff</option>
+                  <option value="non-staff">Non Staff</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Student / Staff ID</label>
                 <input name="studentId" placeholder="e.g., 2021/12345" value={form.studentId} onChange={handleChange} required
                   className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
@@ -395,29 +409,26 @@ export default function AuthPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Role</label>
-                  <select name="role" value={form.role} onChange={handleChange}
-                    className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                      focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                      transition-all duration-200 appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.04)]
-                      bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')]
-                      bg-no-repeat bg-[right_12px_center]">
-                    <option value="student">Student</option>
-                    <option value="faculty">Faculty</option>
-                  </select>
-                </div>
-                <div>
+                {form.role !== 'non-staff' && (
+                  <div>
+                    <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Faculty</label>
+                    <select name="faculty" value={form.faculty} onChange={handleChange} required
+                      className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
+                        focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
+                        transition-all duration-200 appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.04)]
+                        bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')]
+                        bg-no-repeat bg-[right_12px_center]">
+                      <option value="">Select Faculty</option>
+                      {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+                    </select>
+                  </div>
+                )}
+                <div className={form.role === 'non-staff' ? 'col-span-2' : ''}>
                   <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Department</label>
-                  <select name="department" value={form.department} onChange={handleChange} required
+                  <input name="department" type="text" placeholder="e.g. Computer Science" value={form.department} onChange={handleChange} required
                     className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                      focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                      transition-all duration-200 appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.04)]
-                      bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')]
-                      bg-no-repeat bg-[right_12px_center]">
-                    <option value="">Select</option>
-                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                      placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
+                      transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]" />
                 </div>
               </div>
 

@@ -10,10 +10,10 @@ import Input from '../components/common/Input/Input'
 
 const STEPS = ['Personal Info', 'Role & Department', 'Verification', 'Create Password']
 
-const DEPARTMENTS = [
-  'Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology',
-  'Engineering', 'Medicine', 'Law', 'Arts', 'Social Sciences',
-  'Management Sciences', 'Education', 'Environmental Sciences',
+const FACULTIES = [
+  'Arts', 'Basic Medical Sciences', 'Clinical Sciences', 'Dental Sciences',
+  'Education', 'Engineering', 'Environmental Sciences', 'Law', 'Management Sciences',
+  'Pharmacy', 'Science', 'Social Sciences'
 ]
 
 export default function RegisterPage() {
@@ -50,8 +50,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <img src="/images/logo-n.png" alt="LagVoice" className="w-10 h-10 rounded-xl object-contain" />
-          <span className="text-maroon font-bold text-xl">LagVoice</span>
+          <img src="/images/logo-n.png" alt="LagVoice" className="w-20 h-20 rounded-2xl object-contain" />
+          <span className="text-maroon font-extrabold text-4xl">LagVoice</span>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-border p-8">
@@ -97,7 +97,18 @@ export default function RegisterPage() {
                   <Input label="Last Name" name="lastName" placeholder="Okafor" value={form.lastName} onChange={handleChange} required />
                 </div>
                 <Input label="Email Address" name="email" type="email" placeholder="you@student.unilag.edu.ng" value={form.email} onChange={handleChange} required />
-                <Input label="Student/Staff ID" name="studentId" placeholder="e.g., 2021/12345" value={form.studentId} onChange={handleChange} required />
+                
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-1.5">Role</label>
+                  <select name="role" value={form.role} onChange={handleChange} className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-white text-text-primary focus:outline-none focus:ring-2 focus:ring-maroon/30 focus:border-maroon">
+                    <option value="student">Student</option>
+                    <option value="staff">Staff</option>
+                    <option value="non-staff">Non Staff</option>
+                  </select>
+                </div>
+                
+                <Input label="Student / Staff ID" name="studentId" placeholder="e.g., 2021/12345" value={form.studentId} onChange={handleChange} required />
+                
                 <Button type="button" fullWidth onClick={nextStep}>Continue</Button>
               </div>
             )}
@@ -105,19 +116,18 @@ export default function RegisterPage() {
             {/* Step 2: Role & Department */}
             {step === 2 && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">Role</label>
-                  <select name="role" value={form.role} onChange={handleChange} className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-white text-text-primary focus:outline-none focus:ring-2 focus:ring-maroon/30 focus:border-maroon">
-                    <option value="student">Student</option>
-                    <option value="faculty">Faculty</option>
-                  </select>
-                </div>
+                {form.role !== 'non-staff' && (
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-1.5">Faculty</label>
+                    <select name="faculty" value={form.faculty} onChange={handleChange} className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-white text-text-primary focus:outline-none focus:ring-2 focus:ring-maroon/30 focus:border-maroon" required>
+                      <option value="">Select faculty</option>
+                      {FACULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-1.5">Department</label>
-                  <select name="department" value={form.department} onChange={handleChange} className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-white text-text-primary focus:outline-none focus:ring-2 focus:ring-maroon/30 focus:border-maroon" required>
-                    <option value="">Select department</option>
-                    {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                  <Input name="department" placeholder="e.g. Computer Science" value={form.department} onChange={handleChange} required />
                 </div>
                 <div className="flex gap-3">
                   <Button type="button" variant="ghost" onClick={prevStep}>Back</Button>

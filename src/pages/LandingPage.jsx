@@ -84,8 +84,8 @@ function Navbar() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src="/images/logo-n.png" alt="LagVoice" className="w-11 h-11 rounded-xl object-cover" />
-            <span className={`font-bold text-[17px] tracking-tight transition-colors duration-300 ${scrolled ? 'text-ink' : 'text-white'}`}>
+            <img src="/images/logo-n.png" alt="LagVoice" className="w-16 h-16 rounded-xl object-cover" />
+            <span className={`font-extrabold text-xl sm:text-2xl tracking-tight transition-colors duration-300 ${scrolled ? 'text-ink' : 'text-white'}`}>
               LagVoice
             </span>
           </div>
@@ -366,7 +366,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-[17px] text-white/50 max-w-lg leading-relaxed mb-10 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-              Report issues, track resolutions, evaluate courses, and influence real change at the University of Lagos, all from one platform.
+              From broken facilities to unfair grading, your concerns deserve to be heard. Report issues, track resolutions, evaluate courses, and influence real change at the University of Lagos — all from one platform.
             </p>
 
             <div className="flex flex-col sm:flex-row items-start gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
@@ -393,8 +393,8 @@ export default function LandingPage() {
           <div className="mt-16 lg:mt-24 pt-8 border-t border-white/10 grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 animate-fade-in-up" style={{ animationDelay: '0.45s' }}>
             <DonutStat value={1823} total={2200} color="#ffa900" label="Complaints Resolved" />
             <DonutStat value={78} total={100} color="#00b74a" label="Satisfaction Rate" suffix="%" />
-            <BarStat data={[{v:35},{v:52},{v:48},{v:60},{v:44},{v:48},{v:38}]} color="#ffa900" label="Avg. Response Time" />
-            <DonutStat value={15} total={20} color="#b23cfd" label="Departments Covered" />
+            <BarStat data={[{v:48},{v:42},{v:36},{v:32},{v:28},{v:26},{v:24}]} color="#ffa900" label="Avg. Response Time (24h)" />
+            <DonutStat value={12} total={12} color="#b23cfd" label="Faculties Covered" />
           </div>
         </div>
 
@@ -583,8 +583,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             <DonutStat value={1823} total={2200} color="#ffa900" label="Complaints Resolved" />
             <DonutStat value={78} total={100} color="#00b74a" label="Satisfaction Rate" suffix="%" />
-            <BarStat data={[{v:35},{v:52},{v:48},{v:60},{v:44},{v:48},{v:38}]} color="#ffa900" label="Avg. Response Time" />
-            <DonutStat value={15} total={20} color="#b23cfd" label="Departments Covered" />
+            <BarStat data={[{v:48},{v:42},{v:36},{v:32},{v:28},{v:26},{v:24}]} color="#ffa900" label="Avg. Response Time (24h)" />
+            <DonutStat value={12} total={12} color="#b23cfd" label="Faculties Covered" />
           </div>
         </div>
       </section>
@@ -604,7 +604,7 @@ export default function LandingPage() {
             {[
               { name: 'Adaeze Okonkwo', role: '300L Computer Science', quote: 'I reported a broken projector in my lecture hall and it was fixed within 48 hours. LagVoice actually works.', avatar: 'AO' },
               { name: 'Dr. Femi Adebayo', role: 'Faculty of Engineering', quote: 'The peer review system has genuinely improved how we evaluate teaching quality. It is structured, fair, and anonymous.', avatar: 'FA' },
-              { name: 'Blessing Eze', role: 'SERICOM Officer', quote: 'The analytics dashboard shows us patterns we never noticed. We can now predict and prevent issues before they escalate.', avatar: 'BE' },
+              { name: 'Blessing Eze', role: 'SERVICOM Officer', quote: 'The analytics dashboard shows us patterns we never noticed. We can now predict and prevent issues before they escalate.', avatar: 'BE' },
             ].map((t, i) => (
               <Reveal key={i} delay={i * 100}>
                 <div className="bg-cream rounded-2xl p-7 border border-mist/50 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 h-full">
@@ -681,22 +681,22 @@ export default function LandingPage() {
                 <img src="/images/unilag-official-logo.png" alt="University of Lagos" className="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
                 <div className="text-center">
                   <p className="text-[14px] font-bold text-ink">University of Lagos</p>
-                  <p className="text-[12px] text-ink/40 mt-0.5">In Deed and in Truth</p>
+                  <p className="text-[12px] text-ink/40 mt-0.5 uppercase tracking-wider">IN DEED AND IN TRUTH</p>
                 </div>
               </div>
               <div className="w-px h-20 bg-mist/50 hidden sm:block" />
               <div className="flex flex-col items-center gap-3">
                 <img src="/images/servicom-logo.png" alt="SERVICOM" className="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
                 <div className="text-center">
-                  <p className="text-[14px] font-bold text-ink">SERICOM</p>
-                  <p className="text-[12px] text-ink/40 mt-0.5">Service Compact With All Nigerians</p>
+                  <p className="text-[14px] font-bold text-ink">SERVICOM</p>
+                  <p className="text-[12px] text-ink/40 mt-0.5">Service Compact with All Nigerians</p>
                 </div>
               </div>
             </div>
           </Reveal>
           <Reveal delay={200}>
             <p className="text-center text-[12px] text-ink/30 mt-10 max-w-lg mx-auto leading-relaxed">
-              LagVoice is an initiative of the University of Lagos SERICOM unit, dedicated to improving service delivery and quality assurance across campus.
+              LagVoice is an initiative of the University of Lagos SERVICOM unit, dedicated to improving service delivery and quality assurance across campus.
             </p>
           </Reveal>
         </div>
@@ -707,10 +707,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-maroon/10 flex items-center justify-center p-0.5">
+              <div className="w-16 h-16 rounded-xl bg-maroon/10 flex items-center justify-center p-0.5">
                 <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-lg" />
               </div>
-              <span className="text-ink font-bold text-[17px] tracking-tight">LagVoice</span>
+              <span className="text-ink font-extrabold text-3xl tracking-tight">LagVoice</span>
             </div>
             <div className="flex items-center gap-6">
               {['Features', 'Campus', 'Impact'].map(item => (

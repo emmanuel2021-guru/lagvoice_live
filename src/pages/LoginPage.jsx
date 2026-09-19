@@ -41,11 +41,11 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col justify-between h-full">
           {/* Top: Logo */}
           <div className="flex items-center gap-3 mb-12 lg:mb-0">
-            <div className="w-10 h-10 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center">
-              <span className="text-white text-lg font-bold leading-none">V</span>
+            <div className="w-20 h-20 rounded-xl flex items-center justify-center">
+              <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-xl" />
             </div>
             <div>
-              <span className="text-white font-semibold text-sm tracking-wide">LagVoice</span>
+              <span className="text-white font-extrabold text-3xl tracking-wide">LagVoice</span>
               <span className="text-white/30 mx-2">·</span>
               <span className="text-white/50 text-[10px] tracking-widest uppercase">UNILAG QAS</span>
             </div>
@@ -62,8 +62,7 @@ export default function LoginPage() {
               </h1>
               <div className="mt-6 lg:mt-8 max-w-md">
                 <p className="text-white/45 text-sm leading-relaxed">
-                  Report issues, track resolutions, and influence change at the
-                  University of Lagos — anonymously if you choose.
+                  From broken facilities to unfair grading, your concerns deserve to be heard. Report issues, track resolutions, evaluate courses, and influence real change at the University of Lagos — all from one platform.
                 </p>
               </div>
             </div>
@@ -74,7 +73,7 @@ export default function LoginPage() {
             {[
               { value: '1,823', label: 'Complaints resolved' },
               { value: '78%', label: 'Satisfaction rate' },
-              { value: '48h', label: 'Avg. response time' },
+              { value: '24h', label: 'Avg. response time' },
             ].map((stat) => (
               <div key={stat.label}>
                 <p className="font-mono text-gold text-xl lg:text-2xl font-semibold tracking-tight">{stat.value}</p>
@@ -90,10 +89,10 @@ export default function LoginPage() {
         <div className="w-full max-w-[400px]">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-9 h-9 rounded-lg bg-maroon/10 flex items-center justify-center">
-              <span className="text-maroon text-lg font-bold">V</span>
+            <div className="w-16 h-16 rounded-xl flex items-center justify-center">
+              <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-xl" />
             </div>
-            <span className="text-maroon font-semibold tracking-tight">LagVoice</span>
+            <span className="text-maroon font-extrabold text-2xl tracking-tight">LagVoice</span>
           </div>
 
           {/* Form header */}
