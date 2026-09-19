@@ -50,8 +50,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <img src="/images/logo-n.png" alt="LagVoice" className="w-20 h-20 rounded-2xl object-contain" />
-          <span className="text-maroon font-extrabold text-4xl">LagVoice</span>
+          <img src="/images/logo-n.png" alt="LagVoice" className="w-14 h-14 rounded-[14px] object-contain" />
+          <span className="text-maroon font-extrabold text-3xl">LagVoice</span>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-border p-8">

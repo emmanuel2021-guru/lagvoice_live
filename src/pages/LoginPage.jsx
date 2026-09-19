@@ -41,11 +41,11 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col justify-between h-full">
           {/* Top: Logo */}
           <div className="flex items-center gap-3 mb-12 lg:mb-0">
-            <div className="w-20 h-20 rounded-xl flex items-center justify-center">
-              <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-xl" />
+            <div className="w-14 h-14 rounded-[14px] flex items-center justify-center">
+              <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-[14px]" />
             </div>
             <div>
-              <span className="text-white font-extrabold text-3xl tracking-wide">LagVoice</span>
+              <span className="text-white font-extrabold text-2xl tracking-wide">LagVoice</span>
               <span className="text-white/30 mx-2">·</span>
               <span className="text-white/50 text-[10px] tracking-widest uppercase">UNILAG QAS</span>
             </div>
@@ -89,10 +89,10 @@ export default function LoginPage() {
         <div className="w-full max-w-[400px]">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-16 h-16 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center">
               <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-xl" />
             </div>
-            <span className="text-maroon font-extrabold text-2xl tracking-tight">LagVoice</span>
+            <span className="text-maroon font-extrabold text-xl tracking-tight">LagVoice</span>
           </div>
 
           {/* Form header */}

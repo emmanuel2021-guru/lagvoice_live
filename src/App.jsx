@@ -30,8 +30,8 @@ function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream">
       <div className="flex flex-col items-center gap-3">
-        <img src="/images/logo-n.png" alt="LagVoice" className="w-20 h-20 rounded-xl object-contain animate-pulse" />
-        <p className="text-2xl font-bold text-ink/40">Loading LagVoice...</p>
+        <img src="/images/logo-n.png" alt="LagVoice" className="w-16 h-16 rounded-[16px] object-contain animate-pulse" />
+        <p className="text-xl font-bold text-ink/40">Loading LagVoice...</p>
       </div>
     </div>
   )

@@ -84,7 +84,7 @@ function Navbar() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src="/images/logo-n.png" alt="LagVoice" className="w-16 h-16 rounded-xl object-cover" />
+            <img src="/images/logo-n.png" alt="LagVoice" className="w-11 h-11 rounded-[12px] object-cover" />
             <span className={`font-extrabold text-xl sm:text-2xl tracking-tight transition-colors duration-300 ${scrolled ? 'text-ink' : 'text-white'}`}>
               LagVoice
             </span>
@@ -707,10 +707,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-16 h-16 rounded-xl bg-maroon/10 flex items-center justify-center p-0.5">
-                <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-lg" />
+              <div className="w-14 h-14 rounded-[14px] bg-maroon/10 flex items-center justify-center p-0.5">
+                <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-[12px]" />
               </div>
-              <span className="text-ink font-extrabold text-3xl tracking-tight">LagVoice</span>
+              <span className="text-ink font-extrabold text-2xl tracking-tight">LagVoice</span>
             </div>
             <div className="flex items-center gap-6">
               {['Features', 'Campus', 'Impact'].map(item => (

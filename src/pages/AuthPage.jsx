@@ -131,12 +131,12 @@ export default function AuthPage() {
       <div className="flex-1 flex items-center justify-center p-8 sm:p-10 lg:p-12 min-h-screen">
         <div className="w-full max-w-[420px]">
           {/* Logo */}
-          <div className="flex items-center gap-4 mb-10 sm:mb-12">
-            <img src="/images/logo-n.png" alt="LagVoice" className="w-20 h-20 rounded-2xl object-cover shadow-[0_4px_12px_rgba(128,0,0,0.15)]" />
+          <div className="flex items-center gap-3.5 mb-10 sm:mb-12">
+            <img src="/images/logo-n.png" alt="LagVoice" className="w-14 h-14 rounded-[14px] object-cover shadow-[0_4px_12px_rgba(128,0,0,0.15)]" />
             <div>
-              <span className="text-ink font-extrabold text-3xl tracking-tight">LagVoice</span>
-              <span className="text-ink/20 mx-1.5 text-xl">·</span>
-              <span className="text-ink/30 text-xs tracking-widest uppercase font-bold">UNILAG QAS</span>
+              <span className="text-ink font-extrabold text-[1.6rem] tracking-tight">LagVoice</span>
+              <span className="text-ink/20 mx-2 text-lg">·</span>
+              <span className="text-ink/30 text-[11px] tracking-widest uppercase font-bold">UNILAG QAS</span>
             </div>
           </div>
 

@@ -92,12 +92,12 @@ export default function AdminLayout({ children }) {
       {/* ═══ Sidebar — Icon-only rail ═══ */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-[72px] bg-[#1E1B4B] flex flex-col items-center
-        transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto
+        transition-transform duration-300 lg:translate-x-0 lg:relative lg:z-50
         ${mobileNav ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Logo */}
         <div className="w-full flex justify-center pt-6 pb-4">
-          <img src="/images/logo-n.png" alt="LagVoice" className="w-10 h-10 rounded-xl object-contain bg-white" />
+          <img src="/images/logo-n.png" alt="LagVoice" className="w-12 h-12 rounded-[14px] object-contain bg-white shadow-sm" />
         </div>
 
         {/* Nav icons */}
