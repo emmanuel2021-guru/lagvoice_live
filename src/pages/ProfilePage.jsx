@@ -13,7 +13,7 @@ import { formatRelativeTime } from '../utils/formatters'
 import { useDarkMode } from '../hooks/useDarkMode'
 import { STORAGE_KEYS, readObject, removeKey, writeJSON } from '../utils/storage'
 import { DEPARTMENTS, FACULTIES, GENDERS, LEVELS, PROGRAMMES, SESSIONS, roleLabel } from '../services/userService'
-
+import { ticketService } from '../services/ticketService'
 const ACTIVITY = []
 
 const ICONS = {
@@ -196,7 +196,21 @@ export default function ProfilePage() {
   const [showDelete, setShowDelete] = useState(false)
   const [deleteWord, setDeleteWord] = useState('')
   const [prefsSaved, setPrefsSaved] = useState(false)
+  const [ticketStats, setTicketStats] = useState({ filed: 0, resolved: 0 })
 
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const response = await ticketService.getTickets()
+        const data = response.tickets || response.data || []
+        const resolvedCount = data.filter(t => t.status?.toLowerCase() === 'resolved').length
+        setTicketStats({ filed: data.length, resolved: resolvedCount })
+      } catch (err) {
+        console.error('Failed to fetch ticket stats', err)
+      }
+    }
+    fetchTickets()
+  }, [])
   // Sync profile when user updates
   useEffect(() => {
     if (user) {
@@ -328,8 +342,8 @@ export default function ProfilePage() {
   }
 
   const stats = [
-    { label: 'Complaints filed', value: '0', color: '#1266f1' },
-    { label: 'Resolved', value: '0', color: '#00b74a' },
+    { label: 'Complaints filed', value: ticketStats.filed.toString(), color: '#1266f1' },
+    { label: 'Resolved', value: ticketStats.resolved.toString(), color: '#00b74a' },
     { label: 'Evaluations done', value: '0', color: '#ffa900' },
     { label: 'Polls voted', value: '0', color: '#b23cfd' },
   ]
