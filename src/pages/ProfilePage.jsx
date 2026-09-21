@@ -14,14 +14,7 @@ import { useDarkMode } from '../hooks/useDarkMode'
 import { STORAGE_KEYS, readObject, removeKey, writeJSON } from '../utils/storage'
 import { DEPARTMENTS, FACULTIES, GENDERS, LEVELS, PROGRAMMES, SESSIONS, roleLabel } from '../services/userService'
 
-const ACTIVITY = [
-  { id: 1, action: 'Submitted feedback', detail: 'Broken AC in Lecture Hall B', time: new Date(Date.now() - 3600000).toISOString(), icon: 'feedback', color: '#1266f1' },
-  { id: 2, action: 'Completed evaluation', detail: 'CSC 301 — Data Structures', time: new Date(Date.now() - 86400000).toISOString(), icon: 'eval', color: '#ffa900' },
-  { id: 3, action: 'Voted in poll', detail: 'Campus security survey', time: new Date(Date.now() - 172800000).toISOString(), icon: 'poll', color: '#b23cfd' },
-  { id: 4, action: 'Ticket resolved', detail: 'Water supply outage in Hall 4', time: new Date(Date.now() - 259200000).toISOString(), icon: 'resolved', color: '#00b74a' },
-  { id: 5, action: 'Submitted feedback', detail: 'Slow internet on student portal', time: new Date(Date.now() - 345600000).toISOString(), icon: 'feedback', color: '#1266f1' },
-  { id: 6, action: 'Account created', detail: 'Joined LagVoice', time: new Date(Date.now() - 604800000).toISOString(), icon: 'account', color: '#0e52c1' },
-]
+const ACTIVITY = []
 
 const ICONS = {
   feedback: <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />,
@@ -335,10 +328,10 @@ export default function ProfilePage() {
   }
 
   const stats = [
-    { label: 'Complaints filed', value: '3', color: '#1266f1' },
-    { label: 'Resolved', value: '1', color: '#00b74a' },
-    { label: 'Evaluations done', value: '4', color: '#ffa900' },
-    { label: 'Polls voted', value: '2', color: '#b23cfd' },
+    { label: 'Complaints filed', value: '0', color: '#1266f1' },
+    { label: 'Resolved', value: '0', color: '#00b74a' },
+    { label: 'Evaluations done', value: '0', color: '#ffa900' },
+    { label: 'Polls voted', value: '0', color: '#b23cfd' },
   ]
 
   const initials = profile.name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase()
