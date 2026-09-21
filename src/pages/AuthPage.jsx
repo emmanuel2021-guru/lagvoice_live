@@ -2,22 +2,24 @@
  * AuthPage — Sign In / Sign Up
  * Split-screen: clean form left, floating preview cards right
  * Inspired by modern SaaS auth designs with UNILAG maroon/gold palette
+ * Includes back-to-home button
  */
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { DEPARTMENTS, FACULTIES } from '../services/userService'
 
 const ROLES = [
   { id: 'student', label: 'Student' },
   { id: 'staff', label: 'Staff' },
-  { id: 'non-staff', label: 'Non Staff' },
+  { id: 'non-staff', label: 'Non-Staff' },
 ]
 
-const FACULTIES = [
-  'Arts', 'Basic Medical Sciences', 'Clinical Sciences', 'Dental Sciences',
-  'Education', 'Engineering', 'Environmental Sciences', 'Law', 'Management Sciences',
-  'Pharmacy', 'Science', 'Social Sciences'
-]
+/* ── Inline validation message (stable module-level component) ── */
+function FieldError({ message }) {
+  if (!message) return null
+  return <p className="text-[11px] text-red-500 mt-1.5">{message}</p>
+}
 
 /* ── Floating preview card: Ticket Status ── */
 function TicketPreviewCard() {
@@ -79,8 +81,8 @@ function StatsCard() {
       }} />
       <div className="relative z-10">
         <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest mb-3">Campus Impact</p>
-        <p className="text-[2rem] font-bold font-mono leading-none">1,823</p>
-        <p className="text-[11px] text-white/40 mt-1.5">Complaints resolved this year</p>
+        <p className="text-[2rem] font-bold font-mono leading-none">47</p>
+        <p className="text-[11px] text-white/40 mt-1.5">Complaints resolved so far</p>
         <div className="mt-4 flex items-center gap-1.5">
           <span className="px-2 py-0.5 rounded-full bg-gold/20 text-gold text-[10px] font-semibold">48h</span>
           <span className="text-[10px] text-white/30">avg response</span>
@@ -95,47 +97,156 @@ export default function AuthPage() {
   const { login, registerUser, loading, error, clearError } = useAuth()
   const [mode, setMode] = useState('login')
   const [showPassword, setShowPassword] = useState(false)
+  const [signupStep, setSignupStep] = useState(1)
+  const [fieldErrors, setFieldErrors] = useState({})
   const [form, setForm] = useState({
     email: '', password: '', role: 'student', remember: false,
-    firstName: '', lastName: '', studentId: '', department: '', faculty: '',
-    confirmPassword: '', agreeTerms: false,
+    firstName: '', lastName: '', studentId: '', department: '',
+    faculty: 'Science', phone: '', confirmPassword: '', agreeTerms: false,
   })
 
   const switchMode = useCallback((next) => {
     setMode(next)
     clearError()
+    setSignupStep(1)
+    setFieldErrors({})
   }, [clearError])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
     setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
     if (error) clearError()
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const next = { ...prev }
+        delete next[name]
+        return next
+      })
+    }
   }
+
+  /* ── Sign-up wizard ── */
+  const SIGNUP_STEPS = [
+    { id: 'account', label: 'Account' },
+    { id: 'details', label: 'Details' },
+    { id: 'secure', label: 'Secure' },
+  ]
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  const passwordStrength = (pw) => {
+    if (!pw) return 0
+    let score = 0
+    if (pw.length >= 8) score += 1
+    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1
+    if (/\d/.test(pw)) score += 1
+    if (/[^A-Za-z0-9]/.test(pw)) score += 1
+    return score
+  }
+  const strength = passwordStrength(form.password)
+  const strengthLabel = ['Too weak', 'Weak', 'Fair', 'Good', 'Strong'][strength]
+  const strengthColor = ['bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-lime-500', 'bg-emerald-500'][strength]
+
+  const validateSignupStep = (step) => {
+    const errs = {}
+    if (step === 1) {
+      if (!form.firstName.trim()) errs.firstName = 'Enter your first name'
+      if (!form.lastName.trim()) errs.lastName = 'Enter your last name'
+      if (!EMAIL_RE.test(form.email.trim())) errs.email = 'Enter a valid email address'
+    }
+    if (step === 2) {
+      if (!String(form.department).trim()) errs.department = form.role === 'non-staff' ? 'Type your unit or office' : 'Select your department'
+      if (!form.studentId.trim()) errs.studentId = form.role === 'student' ? 'Enter your matric number' : 'Enter your staff ID'
+      if (form.phone && !/^[+\d][\d\s-]{6,14}$/.test(form.phone.trim())) errs.phone = 'Enter a valid phone number'
+    }
+    return errs
+  }
+
+  const goNextSignup = () => {
+    const errs = validateSignupStep(signupStep)
+    setFieldErrors(errs)
+    if (Object.keys(errs).length === 0) setSignupStep(s => Math.min(s + 1, 3))
+  }
+
+  const handleRegisterStep = (e) => {
+    if (signupStep < 3) {
+      e.preventDefault()
+      goNextSignup()
+      return
+    }
+    const errs = {}
+    if (!form.password || passwordStrength(form.password) < 2) errs.password = 'Use at least 8 characters with mixed case and a number'
+    if (form.confirmPassword !== form.password) errs.confirmPassword = 'Passwords do not match'
+    if (!form.agreeTerms) errs.agreeTerms = 'Please accept the policy to continue'
+    setFieldErrors(errs)
+    if (Object.keys(errs).length > 0) {
+      e.preventDefault()
+      return
+    }
+    handleRegister(e)
+  }
+
+  const errCls = (name) => (fieldErrors[name]
+    ? 'border-red-400 focus:ring-red-400/15 focus:border-red-400/50'
+    : 'border-mist/80 focus:ring-maroon/15 focus:border-maroon/40')
+  const inputCls = (name) => `w-full px-4 py-3 text-[14px] rounded-xl bg-white border ${errCls(name)} text-ink
+    placeholder:text-ink/25 focus:outline-none focus:ring-2 transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]`
+  const selectCls = (name) => `w-full px-4 py-3 text-[14px] rounded-xl bg-white border ${errCls(name)} text-ink
+    focus:outline-none focus:ring-2 transition-all duration-200 appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.04)]
+    bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')]
+    bg-no-repeat bg-[right_12px_center]`
+  const errText = (name) => fieldErrors[name] || null
 
   const handleLogin = async (e) => {
     e.preventDefault()
-    await login(form.email, form.password, form.role)
-    navigate(`/${form.role}`)
+    // Same mapping as sign-up: students get the student portal, Staff and
+    // Non-Staff share the staff portal, and the category rides along so the
+    // profile shows the right label.
+    const internalRole = form.role === 'student' ? 'student' : 'faculty'
+    await login(form.email, form.password, internalRole, form.role === 'student' ? '' : form.role)
+    navigate(`/${internalRole}`)
   }
 
   const handleRegister = async (e) => {
     e.preventDefault()
-    await registerUser(form)
-    switchMode('login')
+    // Student / Staff / Non-Staff are what the form collects; Staff and
+    // Non-Staff share the staff portal, and the category rides along on the
+    // profile so every screen can show the right label.
+    const internalRole = form.role === 'student' ? 'student' : 'faculty'
+    const result = await registerUser({
+      ...form,
+      role: internalRole,
+      staffCategory: form.role === 'student' ? '' : form.role,
+    })
+    if (result?.meta?.requestStatus === 'fulfilled') {
+      // Registration signs you in, so land on the dashboard for your role.
+      navigate(`/${result.payload?.user?.role || internalRole}`)
+    }
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-[#F5F0EB] via-[#FAF8F3] to-[#F0EDE8]">
+    <div className="auth-surface min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-[#F5F0EB] via-[#FAF8F3] to-[#F0EDE8]">
       {/* ─── Left Panel: Auth Form ─── */}
-      <div className="flex-1 flex items-center justify-center p-8 sm:p-10 lg:p-12 min-h-screen">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 lg:p-10 min-h-screen overflow-y-auto">
         <div className="w-full max-w-[420px]">
+          {/* Back to Home */}
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-[13px] text-ink/40 hover:text-ink/70 font-medium transition-colors mb-5 group"
+            aria-label="Back to home page"
+          >
+            <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to home
+          </button>
+
           {/* Logo */}
-          <div className="flex items-center gap-3.5 mb-10 sm:mb-12">
-            <img src="/images/logo-n.png" alt="LagVoice" className="w-14 h-14 rounded-[14px] object-cover shadow-[0_4px_12px_rgba(128,0,0,0.15)]" />
+          <div className="flex items-center gap-3 mb-6 sm:mb-8">
+            <img src="/images/logo-n.png" alt="LagVoice" className="w-12 h-12 rounded-xl object-cover shadow-[0_2px_8px_rgba(128,0,0,0.15)]" />
             <div>
-              <span className="text-ink font-extrabold text-[1.6rem] tracking-tight">LagVoice</span>
-              <span className="text-ink/20 mx-2 text-lg">·</span>
-              <span className="text-ink/30 text-[11px] tracking-widest uppercase font-bold">UNILAG QAS</span>
+              <span className="text-ink font-bold text-lg tracking-tight">LagVoice</span>
+              <span className="text-ink/20 mx-1.5">·</span>
+              <span className="text-ink/30 text-[10px] tracking-widest uppercase font-medium">UNILAG QAS</span>
             </div>
           </div>
 
@@ -147,14 +258,14 @@ export default function AuthPage() {
                 : 'opacity-0 translate-y-4 scale-[0.98] absolute inset-0 pointer-events-none'
             }`}
           >
-            <h1 className="text-[1.8rem] sm:text-[2rem] lg:text-[2.5rem] text-ink font-bold leading-[1.1] tracking-tight mb-2">
+            <h1 className="text-[1.6rem] sm:text-[1.8rem] lg:text-[2.2rem] text-ink font-bold leading-[1.1] tracking-tight mb-1.5">
               Welcome<br />back<span className="text-maroon">.</span>
             </h1>
-            <p className="text-ink/40 text-[14px] sm:text-[15px] mb-8 sm:mb-10 leading-relaxed">
+            <p className="text-ink/40 text-[13px] sm:text-[14px] mb-5 sm:mb-6 leading-relaxed">
               Sign in to access the UNILAG Quality Assurance platform.
             </p>
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-3.5">
               {/* Role */}
               <div>
                 <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">
@@ -165,7 +276,7 @@ export default function AuthPage() {
                     name="role"
                     value={form.role}
                     onChange={handleChange}
-                    className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
+                    className="w-full px-4 py-3 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
                       focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
                       transition-all duration-200 appearance-none cursor-pointer
                       bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')]
@@ -195,7 +306,7 @@ export default function AuthPage() {
                     value={form.email}
                     onChange={handleChange}
                     required
-                    className="w-full pl-11 pr-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
+                    className="w-full pl-11 pr-4 py-3 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
                       placeholder:text-ink/25
                       focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
                       transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
@@ -227,7 +338,7 @@ export default function AuthPage() {
                     value={form.password}
                     onChange={handleChange}
                     required
-                    className="w-full pl-11 pr-11 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
+                    className="w-full pl-11 pr-11 py-3 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
                       placeholder:text-ink/25
                       focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
                       transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
@@ -287,7 +398,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-xl bg-maroon text-white font-semibold text-[15px]
+                className="w-full py-3.5 rounded-xl bg-maroon text-white font-semibold text-[14px]
                   shadow-[0_4px_14px_rgba(128,0,0,0.25)] hover:shadow-[0_8px_25px_rgba(128,0,0,0.35)]
                   hover:bg-maroon-dark active:bg-maroon-deep active:scale-[0.98]
                   transition-all duration-300 ease-out
@@ -308,7 +419,7 @@ export default function AuthPage() {
             </form>
 
             {/* Divider */}
-            <div className="relative my-7">
+            <div className="relative my-5">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-mist/50" /></div>
               <div className="relative flex justify-center">
                 <span className="bg-[#F5F0EB] px-3 text-[11px] text-ink/25 uppercase tracking-[0.15em] font-medium">or</span>
@@ -318,7 +429,7 @@ export default function AuthPage() {
             {/* SSO */}
             <button
               type="button"
-              className="w-full flex items-center justify-center gap-3 px-4 py-3.5 border border-mist/70 rounded-xl
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-mist/70 rounded-xl
                 text-[14px] text-ink/50 hover:text-ink hover:border-ink/15 hover:bg-white hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]
                 transition-all duration-200 font-medium group"
             >
@@ -329,7 +440,7 @@ export default function AuthPage() {
             </button>
 
             {/* Sign up link */}
-            <p className="mt-8 text-center text-[14px] text-ink/35">
+            <p className="mt-5 text-center text-[13px] text-ink/35">
               Don't have an account?{' '}
               <button
                 type="button"
@@ -352,126 +463,226 @@ export default function AuthPage() {
                 : 'opacity-0 translate-y-4 scale-[0.98] absolute inset-0 pointer-events-none'
             }`}
           >
-            <h1 className="text-[1.8rem] sm:text-[2rem] lg:text-[2.5rem] text-ink font-bold leading-[1.1] tracking-tight mb-2">
+            <h1 className="text-[1.6rem] sm:text-[1.8rem] lg:text-[2.2rem] text-ink font-bold leading-[1.1] tracking-tight mb-1.5">
               Join the<br />conversation<span className="text-gold">.</span>
             </h1>
-            <p className="text-ink/40 text-[14px] sm:text-[15px] mb-8 sm:mb-10 leading-relaxed">
-              Create your account to start making a difference at UNILAG.
+            <p className="text-ink/40 text-[13px] sm:text-[14px] mb-5 sm:mb-6 leading-relaxed">
+              {['Create your account in three quick steps.', 'Tell us about your role and where you work or study.', 'Secure your account and review your details.'][signupStep - 1]}
             </p>
 
-            <form onSubmit={handleRegister} className="space-y-4 sm:space-y-4.5">
+            <form onSubmit={handleRegisterStep} noValidate className="space-y-3 sm:space-y-3.5">
+              {/* Step rail */}
+              <div className="flex items-center gap-2 mb-4" aria-label="Sign-up steps">
+                {SIGNUP_STEPS.map((s, i) => (
+                  <Fragment key={s.id}>
+                    <button
+                      type="button"
+                      onClick={() => { if (i < signupStep) { setFieldErrors({}); setSignupStep(i + 1) } }}
+                      className={`flex items-center gap-2 ${i < signupStep ? 'cursor-pointer' : 'cursor-default'}`}
+                      aria-current={signupStep === i + 1 ? 'step' : undefined}
+                    >
+                      <span className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center transition-all duration-300 ${
+                        signupStep > i + 1 ? 'bg-emerald-500 text-white'
+                        : signupStep === i + 1 ? 'bg-maroon text-white shadow-[0_2px_8px_rgba(128,0,0,0.3)] scale-110'
+                        : 'bg-mist/60 text-ink/30'
+                      }`}>
+                        {signupStep > i + 1 ? (
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        ) : i + 1}
+                      </span>
+                      <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${signupStep === i + 1 ? 'text-maroon' : 'text-ink/25'}`}>{s.label}</span>
+                    </button>
+                    {i < SIGNUP_STEPS.length - 1 && (
+                      <span className={`flex-1 h-px transition-colors duration-500 ${signupStep > i + 1 ? 'bg-emerald-400/60' : 'bg-mist/60'}`} />
+                    )}
+                  </Fragment>
+                ))}
+              </div>
+
+              {signupStep === 1 && (
+              <div className="space-y-3 animate-fade-step">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">First Name</label>
-                  <input name="firstName" placeholder="Chidinma" value={form.firstName} onChange={handleChange} required
-                    className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                      placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                      transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]" />
+                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">First Name</label>
+                  <input name="firstName" placeholder="Chidinma" value={form.firstName} onChange={handleChange}
+                    className={inputCls('firstName')} />
+                  <FieldError message={errText('firstName')} />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Last Name</label>
-                  <input name="lastName" placeholder="Okafor" value={form.lastName} onChange={handleChange} required
-                    className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                      placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                      transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]" />
+                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Last Name</label>
+                  <input name="lastName" placeholder="Okafor" value={form.lastName} onChange={handleChange}
+                    className={inputCls('lastName')} />
+                  <FieldError message={errText('lastName')} />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Email Address</label>
-                <input name="email" type="email" placeholder="you@student.unilag.edu.ng" value={form.email} onChange={handleChange} required
-                  className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                    placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                    transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]" />
+                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Email Address</label>
+                <input name="email" type="email" placeholder="you@student.unilag.edu.ng" value={form.email} onChange={handleChange}
+                  className={inputCls('email')} />
+                <FieldError message={errText('email')} />
               </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Role</label>
-                <select name="role" value={form.role} onChange={handleChange}
-                  className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                    focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                    transition-all duration-200 appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.04)]
-                    bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')]
-                    bg-no-repeat bg-[right_12px_center]">
-                  <option value="student">Student</option>
-                  <option value="staff">Staff</option>
-                  <option value="non-staff">Non Staff</option>
-                </select>
               </div>
+              )}
 
-              <div>
-                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Student / Staff ID</label>
-                <input name="studentId" placeholder="e.g., 2021/12345" value={form.studentId} onChange={handleChange} required
-                  className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                    placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                    transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]" />
-              </div>
-
+              {signupStep === 2 && (
+              <div className="space-y-3 animate-fade-step">
               <div className="grid grid-cols-2 gap-3">
-                {form.role !== 'non-staff' && (
-                  <div>
-                    <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Faculty</label>
-                    <select name="faculty" value={form.faculty} onChange={handleChange} required
-                      className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                        focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                        transition-all duration-200 appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.04)]
-                        bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')]
-                        bg-no-repeat bg-[right_12px_center]">
-                      <option value="">Select Faculty</option>
-                      {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+                <div>
+                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Role</label>
+                  <select name="role" value={form.role} onChange={handleChange} className={selectCls('role')}>
+                    <option value="student">Student</option>
+                    <option value="staff">Staff</option>
+                    <option value="non-staff">Non-Staff</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">
+                    {form.role === 'non-staff' ? 'Unit / Office' : 'Department'}
+                  </label>
+                  {form.role === 'non-staff' ? (
+                    <input name="department" placeholder="Type your unit or office" value={form.department} onChange={handleChange}
+                      className={inputCls('department')} />
+                  ) : (
+                    <select name="department" value={form.department} onChange={handleChange} className={selectCls('department')}>
+                      <option value="">Select</option>
+                      {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
-                  </div>
-                )}
-                <div className={form.role === 'non-staff' ? 'col-span-2' : ''}>
-                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Department</label>
-                  <input name="department" type="text" placeholder="e.g. Computer Science" value={form.department} onChange={handleChange} required
-                    className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                      placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                      transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]" />
+                  )}
+                  <FieldError message={errText('department')} />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Password</label>
+                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">
+                  {form.role === 'student' ? 'Student ID (Matric Number)' : 'Staff ID'}
+                </label>
+                <input name="studentId" placeholder={form.role === 'student' ? 'e.g., 2021/12345' : 'e.g., UNILAG/STF/0482'} value={form.studentId} onChange={handleChange}
+                  className={inputCls('studentId')} />
+                <FieldError message={errText('studentId')} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Faculty</label>
+                  <select name="faculty" value={form.faculty} onChange={handleChange} className={selectCls('faculty')} disabled={form.role === 'non-staff'}>
+                    {form.role === 'non-staff' && <option value="">Not applicable</option>}
+                    {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Phone Number</label>
+                  <input name="phone" type="tel" placeholder="080 0000 0000" value={form.phone} onChange={handleChange}
+                    className={inputCls('phone')} />
+                  <FieldError message={errText('phone')} />
+                </div>
+              </div>
+              </div>
+              )}
+
+              {signupStep === 3 && (
+              <div className="space-y-3 animate-fade-step">
+              <div>
+                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Password</label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
                     <svg className="w-4 h-4 text-ink/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
-                  <input name="password" type="password" placeholder="Create a strong password" value={form.password} onChange={handleChange} required
-                    className="w-full pl-11 pr-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                      placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                      transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]" />
+                  <input name="password" type="password" placeholder="Create a strong password" value={form.password} onChange={handleChange}
+                    className={`w-full pl-11 pr-4 py-3 text-[14px] rounded-xl bg-white border ${errCls('password')} text-ink
+                      placeholder:text-ink/25 focus:outline-none focus:ring-2 transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]`} />
                 </div>
+                {/* Strength meter */}
+                {form.password && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex-1 flex gap-1">
+                      {[0, 1, 2, 3].map(seg => (
+                        <span key={seg} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${seg < strength ? strengthColor : 'bg-mist/70'}`} />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-semibold text-ink/40 w-16 text-right">{strengthLabel}</span>
+                  </div>
+                )}
+                <FieldError message={errText('password')} />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Confirm Password</label>
-                <input name="confirmPassword" type="password" placeholder="Confirm your password" value={form.confirmPassword} onChange={handleChange} required
-                  className="w-full px-4 py-3.5 text-[14px] rounded-xl bg-white border border-mist/80 text-ink
-                    placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 focus:border-maroon/40
-                    transition-all duration-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]" />
+                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Confirm Password</label>
+                <input name="confirmPassword" type="password" placeholder="Confirm your password" value={form.confirmPassword} onChange={handleChange}
+                  className={inputCls('confirmPassword')} />
+                <FieldError message={errText('confirmPassword')} />
               </div>
 
-              <label className="flex items-start gap-2.5 cursor-pointer group pt-1">
-                <div className="relative mt-0.5">
-                  <input type="checkbox" name="agreeTerms" checked={form.agreeTerms} onChange={handleChange} className="peer sr-only" required />
-                  <div className="w-[18px] h-[18px] rounded-md border-[1.5px] border-mist bg-white
-                    peer-checked:bg-maroon peer-checked:border-maroon
-                    transition-all duration-200 flex items-center justify-center
-                    group-hover:border-ink/30">
+              {/* Review */}
+              <div className="rounded-xl bg-cream/70 border border-mist/50 p-4">
+                <p className="text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2.5">Review your details</p>
+                <div className="space-y-1.5">
+                  {[
+                    ['Name', `${form.firstName} ${form.lastName}`.trim() || '—'],
+                    ['Email', form.email || '—'],
+                    ['Role', ROLES.find(r => r.id === form.role)?.label || form.role],
+                    ['Department', form.department || '—'],
+                    [form.role === 'student' ? 'Student ID' : 'Staff ID', form.studentId || '—'],
+                    ['Faculty', form.role === 'non-staff' ? 'Not applicable' : form.faculty],
+                    ['Phone', form.phone || '—'],
+                  ].map(([k, v]) => (
+                    <div key={k} className="flex items-center justify-between gap-3 text-[12px]">
+                      <span className="text-ink/35">{k}</span>
+                      <span className="text-ink font-medium text-right truncate max-w-[60%]">{v}</span>
+                    </div>
+                  ))}
+                </div>
+                <button type="button" onClick={() => { setFieldErrors({}); setSignupStep(2) }} className="mt-3 text-[12px] font-semibold text-maroon hover:text-maroon-dark transition-colors">
+                  Edit details
+                </button>
+              </div>
+
+              <div className="flex items-start gap-2.5 pt-1">
+                <div 
+                  className="relative mt-0.5 cursor-pointer group"
+                  onClick={() => {
+                    setForm(prev => ({ ...prev, agreeTerms: !prev.agreeTerms }));
+                    if (fieldErrors.agreeTerms) {
+                      setFieldErrors(prev => {
+                        const next = { ...prev };
+                        delete next.agreeTerms;
+                        return next;
+                      });
+                    }
+                  }}
+                >
+                  <input id="agreeTerms" type="checkbox" name="agreeTerms" checked={form.agreeTerms} readOnly className="sr-only" required />
+                  <div className={`w-[18px] h-[18px] rounded-md border-[1.5px] transition-all duration-200 flex items-center justify-center ${
+                    form.agreeTerms ? 'bg-maroon border-maroon' : 'border-mist bg-white group-hover:border-ink/30'
+                  }`}>
                     {form.agreeTerms && (
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <svg className="w-3 h-3 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </div>
                 </div>
-                <span className="text-[13px] text-ink/35 group-hover:text-ink/50 transition-colors leading-relaxed">
+                <span 
+                  className="text-[13px] text-ink/35 hover:text-ink/50 transition-colors leading-relaxed cursor-pointer"
+                  onClick={() => {
+                    setForm(prev => ({ ...prev, agreeTerms: !prev.agreeTerms }));
+                    if (fieldErrors.agreeTerms) {
+                      setFieldErrors(prev => {
+                        const next = { ...prev };
+                        delete next.agreeTerms;
+                        return next;
+                      });
+                    }
+                  }}
+                >
                   I agree to the <span className="text-maroon font-medium">UNILAG QAS Policy</span> and <span className="text-maroon font-medium">Terms of Service</span>
                 </span>
-              </label>
+              </div>
+              <FieldError message={errText('agreeTerms')} />
+              </div>
+              )}
 
               {error && (
                 <div className="px-4 py-3 rounded-xl bg-escalated/5 border border-escalated/15 animate-shake" role="alert">
@@ -482,15 +693,18 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-xl bg-maroon text-white font-semibold text-[15px]
+                className="w-full py-3.5 rounded-xl bg-maroon text-white font-semibold text-[14px]
                   shadow-[0_4px_14px_rgba(128,0,0,0.25)] hover:shadow-[0_8px_25px_rgba(128,0,0,0.35)]
                   hover:bg-maroon-dark active:bg-maroon-deep active:scale-[0.98]
                   transition-all duration-300 ease-out
                   disabled:opacity-50 disabled:cursor-not-allowed
                   relative overflow-hidden group mt-1"
               >
-                <span className={`transition-all duration-200 ${loading ? 'translate-y-[-20px] opacity-0' : ''}`}>
-                  Create Account
+                <span className={`inline-flex items-center gap-2 transition-all duration-200 ${loading ? 'translate-y-[-20px] opacity-0' : ''}`}>
+                  {signupStep < 3 ? 'Continue' : 'Create Account'}
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d={signupStep < 3 ? 'M13 7l5 5-5 5M18 12H3' : 'M5 13l4 4L19 7'} />
+                  </svg>
                 </span>
                 {loading && (
                   <svg className="animate-spin absolute inset-0 m-auto h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -502,7 +716,7 @@ export default function AuthPage() {
               </button>
             </form>
 
-            <p className="mt-7 text-center text-[14px] text-ink/35">
+            <p className="mt-5 text-center text-[13px] text-ink/35">
               Already have an account?{' '}
               <button
                 type="button"

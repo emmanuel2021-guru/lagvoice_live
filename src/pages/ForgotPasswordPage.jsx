@@ -27,13 +27,13 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center p-4">
+    <div className="auth-surface min-h-screen bg-cream flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="w-14 h-14 rounded-[14px] flex items-center justify-center">
-            <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-[14px]" />
+          <div className="w-9 h-9 rounded-lg bg-maroon/10 flex items-center justify-center">
+            <span className="text-maroon text-lg font-bold">V</span>
           </div>
-          <span className="text-maroon font-extrabold text-3xl tracking-tight">LagVoice</span>
+          <span className="text-maroon font-semibold tracking-tight">LagVoice</span>
         </div>
 
         <div className="bg-paper rounded-xl border border-mist/60 p-8">

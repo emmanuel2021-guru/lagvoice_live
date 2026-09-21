@@ -3,10 +3,10 @@
  * Filterable table, status updates, bulk actions
  */
 import { useState, useEffect } from 'react'
+import StatusPill from '../components/common/StatusPill/StatusPill'
 import { TICKET_STATUS_CONFIG } from '../utils/constants'
-import { ticketService } from '../services/ticketService'
 import { formatRelativeTime } from '../utils/formatters'
-
+import { ticketService } from '../services/ticketService'
 
 const CATEGORIES = ['all', 'Academic', 'Infrastructure', 'Admin', 'Welfare', 'General']
 const STATUSES = ['all', 'pending', 'under_review', 'resolved', 'escalated']
@@ -15,26 +15,29 @@ export default function AdminComplaints() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
+
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadTickets = async () => {
+    const fetchTickets = async () => {
+      setLoading(true)
       try {
-        const data = await ticketService.getTickets()
-        setTickets(data.tickets || [])
-      } catch (e) {
-        console.error('Failed to load tickets', e)
+        const response = await ticketService.getTickets()
+        setTickets(response.tickets || response.data || [])
+      } catch (err) {
+        console.error('Failed to load tickets', err)
       } finally {
         setLoading(false)
       }
     }
-    loadTickets()
+    fetchTickets()
   }, [])
 
   const filtered = tickets.filter(c => {
-    const trackingIdStr = c.trackingId || `UNILAG-TKT-${c.id}`
-    const matchSearch = !search || c.title.toLowerCase().includes(search.toLowerCase()) || trackingIdStr.toLowerCase().includes(search.toLowerCase())
+    const title = c.title || ''
+    const trackingId = c.trackingId || ''
+    const matchSearch = !search || title.toLowerCase().includes(search.toLowerCase()) || trackingId.toLowerCase().includes(search.toLowerCase())
     const matchStatus = statusFilter === 'all' || c.status === statusFilter
     const matchCategory = categoryFilter === 'all' || c.category === categoryFilter
     return matchSearch && matchStatus && matchCategory
@@ -63,7 +66,9 @@ export default function AdminComplaints() {
         ].map(s => (
           <div key={s.label} className="bg-paper rounded-xl border border-mist/50 p-3">
             <p className="text-[10px] text-ink/30 uppercase tracking-[0.12em] font-semibold">{s.label}</p>
-            <p className="text-[1.5rem] font-bold font-mono mt-1" style={{ color: s.color }}>{s.count}</p>
+            <p className="text-[1.5rem] font-bold font-mono mt-1" style={{ color: s.color }}>
+              {loading ? '-' : s.count}
+            </p>
           </div>
         ))}
       </div>
@@ -113,7 +118,20 @@ export default function AdminComplaints() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(c => {
+              {loading ? (
+                <tr>
+                  <td colSpan="7" className="px-5 py-12 text-center text-[13px] text-ink/40 font-medium">
+                    Loading complaints...
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="px-5 py-12 text-center text-[13px] text-ink/40 font-medium">
+                    No complaints found.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map(c => {
                 const status = TICKET_STATUS_CONFIG[c.status]
                 return (
                   <tr key={c.id} className="border-b border-mist/15 last:border-0 hover:bg-cream/30 transition-colors">
@@ -128,12 +146,7 @@ export default function AdminComplaints() {
                       <span className="text-[12px] text-ink/50">{c.dept}</span>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span
-                        className="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-[0.08em]"
-                        style={{ color: status?.color, backgroundColor: status?.bgColor }}
-                      >
-                        {status?.label}
-                      </span>
+                      <StatusPill status={status} />
                     </td>
                     <td className="px-5 py-3.5">
                       <span className={`text-[10px] font-bold uppercase tracking-wider ${
@@ -152,7 +165,7 @@ export default function AdminComplaints() {
                     </td>
                   </tr>
                 )
-              })}
+              }))}
             </tbody>
           </table>
         </div>

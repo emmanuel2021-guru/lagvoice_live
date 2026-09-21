@@ -1,33 +1,41 @@
-import api from './api'
-
+/**
+ * Analytics service (currently pending backend endpoints)
+ * Returns empty structures until connected to backend API.
+ */
 export const analyticsService = {
   async getKpiOverview() {
-    const response = await api.get('/analytics/kpi-overview')
-    return response.data
+    return {
+      totalComplaints: { thisMonth: 0, thisYear: 0, change: 0 },
+      avgResolutionTime: { hours: 0, days: 0, change: 0 },
+      satisfactionScore: { percentage: 0, change: 0 },
+      resolutionRate: { percentage: 0, change: 0 },
+      openTickets: 0,
+      mostReportedDept: '-',
+    }
   },
 
   async getComplaintTrend(period = 'monthly') {
-    const response = await api.get(`/analytics/trends?period=${period}`)
-    return response.data
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    return months.map(month => ({
+      month,
+      complaints: 0,
+      resolved: 0,
+    }))
   },
 
   async getComplaintsByCategory() {
-    const response = await api.get('/analytics/by-category')
-    return response.data
+    return []
   },
 
   async getComplaintsByDepartment() {
-    const response = await api.get('/analytics/by-department')
-    return response.data
+    return []
   },
 
   async getActiveAlerts() {
-    const response = await api.get('/analytics/alerts')
-    return response.data
+    return []
   },
 
   async getTopRecurringIssues() {
-    const response = await api.get('/analytics/top-issues')
-    return response.data
+    return []
   },
 }

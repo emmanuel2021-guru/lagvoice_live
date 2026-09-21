@@ -84,8 +84,8 @@ function Navbar() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src="/images/logo-n.png" alt="LagVoice" className="w-11 h-11 rounded-[12px] object-cover" />
-            <span className={`font-extrabold text-xl sm:text-2xl tracking-tight transition-colors duration-300 ${scrolled ? 'text-ink' : 'text-white'}`}>
+            <img src="/images/logo-n.png" alt="LagVoice" className="w-9 h-9 rounded-lg object-cover" />
+            <span className={`font-bold text-[17px] tracking-tight transition-colors duration-300 ${scrolled ? 'text-ink' : 'text-white'}`}>
               LagVoice
             </span>
           </div>
@@ -366,7 +366,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-[17px] text-white/50 max-w-lg leading-relaxed mb-10 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-              From broken facilities to unfair grading, your concerns deserve to be heard. Report issues, track resolutions, evaluate courses, and influence real change at the University of Lagos — all from one platform.
+              Report issues, track resolutions, evaluate courses, and influence real change at the University of Lagos, all from one platform.
             </p>
 
             <div className="flex flex-col sm:flex-row items-start gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
@@ -391,10 +391,10 @@ export default function LandingPage() {
 
           {/* Stats charts at bottom of hero */}
           <div className="mt-16 lg:mt-24 pt-8 border-t border-white/10 grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 animate-fade-in-up" style={{ animationDelay: '0.45s' }}>
-            <DonutStat value={1823} total={2200} color="#ffa900" label="Complaints Resolved" />
+            <DonutStat value={47} total={120} color="#ffa900" label="Complaints Resolved" />
             <DonutStat value={78} total={100} color="#00b74a" label="Satisfaction Rate" suffix="%" />
-            <BarStat data={[{v:48},{v:42},{v:36},{v:32},{v:28},{v:26},{v:24}]} color="#ffa900" label="Avg. Response Time (24h)" />
-            <DonutStat value={12} total={12} color="#b23cfd" label="Faculties Covered" />
+            <BarStat data={[{v:8},{v:12},{v:10},{v:15},{v:11},{v:9},{v:7}]} color="#ffa900" label="Avg. Response Time" />
+            <DonutStat value={6} total={14} color="#b23cfd" label="Departments Covered" />
           </div>
         </div>
 
@@ -581,10 +581,10 @@ export default function LandingPage() {
             </div>
           </Reveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-            <DonutStat value={1823} total={2200} color="#ffa900" label="Complaints Resolved" />
+            <DonutStat value={47} total={120} color="#ffa900" label="Complaints Resolved" />
             <DonutStat value={78} total={100} color="#00b74a" label="Satisfaction Rate" suffix="%" />
-            <BarStat data={[{v:48},{v:42},{v:36},{v:32},{v:28},{v:26},{v:24}]} color="#ffa900" label="Avg. Response Time (24h)" />
-            <DonutStat value={12} total={12} color="#b23cfd" label="Faculties Covered" />
+            <BarStat data={[{v:8},{v:12},{v:10},{v:15},{v:11},{v:9},{v:7}]} color="#ffa900" label="Avg. Response Time" />
+            <DonutStat value={6} total={14} color="#b23cfd" label="Departments Covered" />
           </div>
         </div>
       </section>
@@ -681,7 +681,7 @@ export default function LandingPage() {
                 <img src="/images/unilag-official-logo.png" alt="University of Lagos" className="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
                 <div className="text-center">
                   <p className="text-[14px] font-bold text-ink">University of Lagos</p>
-                  <p className="text-[12px] text-ink/40 mt-0.5 uppercase tracking-wider">IN DEED AND IN TRUTH</p>
+                  <p className="text-[12px] text-ink/40 mt-0.5 tracking-wide">IN DEED AND IN TRUTH</p>
                 </div>
               </div>
               <div className="w-px h-20 bg-mist/50 hidden sm:block" />
@@ -689,7 +689,7 @@ export default function LandingPage() {
                 <img src="/images/servicom-logo.png" alt="SERVICOM" className="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
                 <div className="text-center">
                   <p className="text-[14px] font-bold text-ink">SERVICOM</p>
-                  <p className="text-[12px] text-ink/40 mt-0.5">Service Compact with All Nigerians</p>
+                  <p className="text-[12px] text-ink/40 mt-0.5 tracking-wide">SERVICE COMPACT WITH ALL NIGERIANS</p>
                 </div>
               </div>
             </div>
@@ -707,10 +707,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-14 h-14 rounded-[14px] bg-maroon/10 flex items-center justify-center p-0.5">
-                <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-[12px]" />
+              <div className="w-10 h-10 rounded-xl bg-maroon/10 flex items-center justify-center p-0.5">
+                <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover rounded-lg" />
               </div>
-              <span className="text-ink font-extrabold text-2xl tracking-tight">LagVoice</span>
+              <span className="text-ink font-bold text-[17px] tracking-tight">LagVoice</span>
             </div>
             <div className="flex items-center gap-6">
               {['Features', 'Campus', 'Impact'].map(item => (

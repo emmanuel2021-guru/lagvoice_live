@@ -11,7 +11,6 @@ export const ROUTES = {
   STUDENT_DASHBOARD: '/student',
   ADMIN_DASHBOARD: '/admin',
   FACULTY_DASHBOARD: '/faculty',
-  EXTERNAL_DASHBOARD: '/external',
   FEEDBACK_SUBMIT: '/student/feedback',
   TICKET_DETAIL: '/student/ticket/:id',
   TICKETS_LIST: '/student/tickets',
@@ -24,6 +23,8 @@ export const ROLES = {
   STUDENT: 'student',
   FACULTY: 'faculty',
   ADMIN: 'admin',
+  STAFF: 'staff',
+  NON_STAFF: 'non-staff',
   EXTERNAL: 'external',
 }
 
@@ -132,7 +133,8 @@ export const RATING_LABELS = [
   'Excellent',
 ]
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+// API base URL
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 // Mock tracking ID prefix
 export const TRACKING_PREFIX = 'UNILAG'

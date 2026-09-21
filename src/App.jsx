@@ -15,7 +15,6 @@ const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const FacultyDashboard = lazy(() => import('./pages/FacultyDashboard'))
-const ExternalDashboard = lazy(() => import('./pages/ExternalDashboard'))
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'))
 const TicketList = lazy(() => import('./pages/TicketList'))
 const TicketDetail = lazy(() => import('./pages/TicketDetail'))
@@ -33,8 +32,8 @@ function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream">
       <div className="flex flex-col items-center gap-3">
-        <img src="/images/logo-n.png" alt="LagVoice" className="w-16 h-16 rounded-[16px] object-contain animate-pulse" />
-        <p className="text-xl font-bold text-ink/40">Loading LagVoice...</p>
+        <img src="/images/logo-n.png" alt="LagVoice" className="w-10 h-10 rounded-xl object-contain animate-pulse" />
+        <p className="text-sm text-ink/40">Loading LagVoice...</p>
       </div>
     </div>
   )
@@ -71,7 +70,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
         {/* Staff / Non-Staff Routes */}
         <Route
           path="/staff"
@@ -97,10 +95,11 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/student/feedback"
           element={
-            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentLayout><FeedbackForm /></StudentLayout>
             </ProtectedRoute>
           }
@@ -108,7 +107,7 @@ export default function App() {
         <Route
           path="/student/tickets"
           element={
-            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentLayout><TicketList /></StudentLayout>
             </ProtectedRoute>
           }
@@ -116,7 +115,7 @@ export default function App() {
         <Route
           path="/student/ticket/:id"
           element={
-            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentLayout><TicketDetail /></StudentLayout>
             </ProtectedRoute>
           }
@@ -124,7 +123,7 @@ export default function App() {
         <Route
           path="/student/evaluations"
           element={
-            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentLayout><EvaluationForm /></StudentLayout>
             </ProtectedRoute>
           }
@@ -132,7 +131,7 @@ export default function App() {
         <Route
           path="/student/polls"
           element={
-            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentLayout><StudentPolls /></StudentLayout>
             </ProtectedRoute>
           }
@@ -140,7 +139,7 @@ export default function App() {
         <Route
           path="/student/profile"
           element={
-            <ProtectedRoute allowedRoles={['student', 'staff', 'non-staff']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentLayout><ProfilePage /></StudentLayout>
             </ProtectedRoute>
           }
@@ -199,7 +198,7 @@ export default function App() {
           path="/admin/settings"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout><ProfilePage /></AdminLayout>
+              <AdminLayout><PlaceholderPage title="Settings" /></AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -210,24 +209,6 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['faculty']}>
               <AdminLayout><FacultyDashboard /></AdminLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/faculty/settings"
-          element={
-            <ProtectedRoute allowedRoles={['faculty']}>
-              <AdminLayout><ProfilePage /></AdminLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* External Routes */}
-        <Route
-          path="/external"
-          element={
-            <ProtectedRoute allowedRoles={['external']}>
-              <AdminLayout><ExternalDashboard /></AdminLayout>
             </ProtectedRoute>
           }
         />

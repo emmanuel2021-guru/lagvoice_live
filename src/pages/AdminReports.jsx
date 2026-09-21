@@ -2,8 +2,7 @@
  * AdminReports — Automated Accreditation Reporting
  * NUC reports, departmental reports, export options
  */
-import { useState, useEffect } from 'react'
-import { analyticsService } from '../services/analyticsService'
+import { useState } from 'react'
 
 const REPORT_TYPES = [
   { id: 'nuc', title: 'NUC Accreditation Report', description: 'Generate a formatted report for the National Universities Commission', icon: (
@@ -20,27 +19,11 @@ const REPORT_TYPES = [
   )},
 ]
 
-
+const departments = []
 
 export default function AdminReports() {
   const [generating, setGenerating] = useState(null)
   const [dateRange, setDateRange] = useState('this_month')
-  const [departments, setDepartments] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const loadDepts = async () => {
-      try {
-        const res = await analyticsService.getComplaintsByDepartment()
-        setDepartments(res.data || [])
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadDepts()
-  }, [dateRange])
 
   const handleGenerate = async (type) => {
     setGenerating(type)
@@ -112,18 +95,21 @@ export default function AdminReports() {
           </select>
         </div>
         <div className="space-y-3">
-          {departments.map(dept => {
-            const complaints = dept.count || 0
-            const resolved = dept.resolved || 0
-            const resolutionRate = complaints > 0 ? Math.round((resolved / complaints) * 100) : 0
+          {departments.length === 0 ? (
+            <div className="text-center py-8 bg-paper rounded-2xl border border-mist/50">
+              <p className="text-[14px] text-ink/40 font-medium">No departmental data available.</p>
+            </div>
+          ) : (
+            departments.map(dept => {
+              const resolutionRate = Math.round((dept.resolved / dept.complaints) * 100)
             return (
-              <div key={dept.department} className="flex items-center gap-4 p-3 rounded-xl hover:bg-cream/50 transition-colors">
+              <div key={dept.name} className="flex items-center gap-4 p-3 rounded-xl hover:bg-cream/50 transition-colors">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-ink">{dept.department}</p>
+                  <p className="text-[13px] font-semibold text-ink">{dept.name}</p>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[11px] text-ink/30">{complaints} complaints</span>
+                    <span className="text-[11px] text-ink/30">{dept.complaints} complaints</span>
                     <span className="text-[11px] text-ink/15">·</span>
-                    <span className="text-[11px] text-resolved">{resolved} resolved</span>
+                    <span className="text-[11px] text-resolved">{dept.resolved} resolved</span>
                   </div>
                 </div>
                 <div className="w-24">
@@ -133,9 +119,9 @@ export default function AdminReports() {
                 </div>
                 <span className="text-[12px] font-mono font-semibold text-ink/50 w-10 text-right">{resolutionRate}%</span>
               </div>
-            )
-          })}
-        </div>
+          )
+        }))}
+      </div>
       </div>
     </div>
   )

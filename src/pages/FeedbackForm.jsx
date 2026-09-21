@@ -5,7 +5,7 @@
  */
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ticketService } from '../services/ticketService'
+import { STORAGE_KEYS, readArray, writeJSON } from '../utils/storage'
 
 const CATEGORIES = [
   {
@@ -66,7 +66,7 @@ export default function FeedbackForm() {
     gpsLat: null, gpsLng: null,
   })
   const [images, setImages] = useState([])
-  const [trackingId, setTrackingId] = useState(generateTrackingId())
+  const [trackingId] = useState(generateTrackingId())
   const [submitting, setSubmitting] = useState(false)
   const [geoLoading, setGeoLoading] = useState(false)
 
@@ -103,28 +103,27 @@ export default function FeedbackForm() {
 
   const handleSubmit = async () => {
     setSubmitting(true)
-    try {
-      const data = {
-        title: form.title,
-        description: form.description,
-        category: selectedCategory?.label || form.category,
-        subcategory: form.subcategory,
-        location: form.location,
-        urgency: form.urgency,
-        isAnonymous: form.anonymous
-      }
+    await new Promise(r => setTimeout(r, 1500))
 
-      if (images.length > 0) {
-        data.images = images.map(img => img.file)
-      }
-
-      const res = await ticketService.createTicket(data)
-      if (res.success) {
-        setTrackingId(res.ticket.trackingId)
-      }
-    } catch (e) {
-      alert(e.message || 'Failed to submit feedback')
+    const complaint = {
+      id: Date.now(),
+      trackingId,
+      title: form.title,
+      description: form.description,
+      category: selectedCategory?.label || form.category,
+      categoryId: form.category,
+      subcategory: form.subcategory,
+      location: form.location,
+      gpsLat: form.gpsLat,
+      gpsLng: form.gpsLng,
+      urgency: form.urgency,
+      anonymous: form.anonymous,
+      images: images.map(i => i.name),
+      status: 'submitted',
+      createdAt: new Date().toISOString(),
     }
+    const existing = readArray(STORAGE_KEYS.complaints).filter((c) => c && typeof c === 'object')
+    writeJSON(STORAGE_KEYS.complaints, [complaint, ...existing])
 
     setSubmitting(false)
     setStep(3)
