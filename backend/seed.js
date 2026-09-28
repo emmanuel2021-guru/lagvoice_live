@@ -75,9 +75,10 @@ async function main() {
         description: 'The air conditioning unit has been leaking water for 3 days.',
         category: 'Infrastructure',
         subcategory: 'Air Conditioning',
+        urgency: 'high',
         location: 'Lecture Hall B',
         status: 'under_review',
-        userId: student.id,
+        submittedById: student.id,
       },
       {
         trackingId: 'UNILAG-67890',
@@ -85,9 +86,10 @@ async function main() {
         description: 'My portal is not showing my first semester grades.',
         category: 'Academics',
         subcategory: 'Results',
+        urgency: 'medium',
         location: 'Senate Building',
         status: 'resolved',
-        userId: student.id,
+        submittedById: student.id,
       }
     ]
   });
@@ -108,7 +110,8 @@ async function main() {
       lecturer: 'Dr. Adebayo',
       department: 'Computer Science',
       level: '100',
-      overallRating: 4.5,
+      likert: { q1: 5, q2: 4, q3: 5 },
+      overallRating: 5,
       likes: 'Great explanations.',
       suggestions: 'More practical classes.',
       evaluatedById: student.id
@@ -129,7 +132,8 @@ async function main() {
       lecturer: 'Prof. Okonkwo',
       department: 'Mathematics',
       level: '100',
-      overallRating: 3.2,
+      likert: { q1: 3, q2: 3, q3: 4 },
+      overallRating: 3,
       likes: 'Good materials.',
       suggestions: 'Lecturer talks too fast.',
       evaluatedById: student.id
