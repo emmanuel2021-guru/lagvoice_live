@@ -4,7 +4,8 @@ const {
   getTickets, 
   getTicketById, 
   addComment, 
-  updateTicketStatus 
+  updateTicketStatus,
+  updateTicketPipeline
 } = require('../controllers/ticketController');
 const { protect, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -25,6 +26,7 @@ router.post('/:id/comments', addComment);
 
 // Only admins, faculty, staff and non-staff can update status
 router.put('/:id/status', authorize('admin', 'faculty', 'staff', 'non-staff'), updateTicketStatus);
+router.put('/:id/pipeline', authorize('admin', 'faculty', 'staff', 'non-staff'), updateTicketPipeline);
 
 module.exports = router;
 

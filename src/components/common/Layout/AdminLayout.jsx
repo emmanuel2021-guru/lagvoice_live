@@ -20,7 +20,7 @@ const adminNavItems = [
 
 const facultyNavItems = [
   { label: 'Overview', path: '/faculty', icon: 'grid' },
-  { label: 'Peer Reviews', path: '/faculty/reviews', icon: 'people' },
+  { label: 'Peer Reviews', path: '/faculty/peer-review', icon: 'people' },
   { label: 'Results', path: '/faculty/evaluations', icon: 'star' },
   { label: 'Metrics', path: '/faculty/metrics', icon: 'chart' },
 ]

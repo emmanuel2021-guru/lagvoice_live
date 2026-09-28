@@ -29,7 +29,9 @@ api.interceptors.response.use(
       const { status, data } = error.response
       if (status === 401) {
         localStorage.removeItem('lagvoice_token')
-        window.location.href = '/login'
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          window.location.href = '/login'
+        }
       }
       return Promise.reject(new Error(data?.message || `Request failed (${status})`))
     }

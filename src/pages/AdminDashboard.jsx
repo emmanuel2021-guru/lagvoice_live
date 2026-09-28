@@ -104,26 +104,30 @@ function CategoryPill({ category, count, total, color }) {
   )
 }
 
-/* ── Alert item ── */
-function AlertItem({ alert, idx }) {
-  const isCritical = alert.severity === 'critical'
+/* ── Early Warning Banner ── */
+function EarlyWarningBanner({ alert }) {
+  const isCritical = alert.type === 'critical'
   return (
     <div
-      className={`flex items-start gap-3 p-4 rounded-xl border transition-all duration-300 hover-lift ${
+      className={`flex items-start gap-4 p-5 rounded-2xl border-l-4 transition-all duration-300 shadow-sm ${
         isCritical
-          ? 'bg-gradient-to-r from-[#f93154]/[0.04] to-transparent border-[#f93154]/15'
-          : 'bg-gradient-to-r from-[#ffa900]/[0.04] to-transparent border-[#ffa900]/15'
+          ? 'bg-gradient-to-r from-[#f93154]/[0.05] to-[#f93154]/[0.01] border-[#f93154] text-[#f93154]'
+          : 'bg-gradient-to-r from-[#ffa900]/[0.05] to-[#ffa900]/[0.01] border-[#ffa900] text-[#ffa900]'
       }`}
     >
-      <div className="relative mt-1.5 shrink-0">
-        <div className={`w-2.5 h-2.5 rounded-full ${isCritical ? 'bg-[#f93154]' : 'bg-[#ffa900]'}`} />
-        <div className={`absolute inset-0 w-2.5 h-2.5 rounded-full pulse-dot ${isCritical ? 'bg-[#f93154]' : 'bg-[#ffa900]'}`} />
+      <div className="relative mt-0.5 shrink-0">
+        <div className={`w-4 h-4 rounded-full flex items-center justify-center ${isCritical ? 'bg-[#f93154]' : 'bg-[#ffa900]'}`}>
+          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div className={`absolute inset-0 w-4 h-4 rounded-full pulse-dot ${isCritical ? 'bg-[#f93154]' : 'bg-[#ffa900]'}`} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-[#262626]">{alert.title}</p>
-        <p className="text-[12px] text-[#9fa6b2] mt-0.5 leading-relaxed">{alert.message}</p>
+        <p className={`text-[15px] font-bold ${isCritical ? 'text-[#f93154]' : 'text-[#ffa900]'}`}>{isCritical ? 'CRITICAL EARLY WARNING' : 'NOTICE'}</p>
+        <p className="text-[13px] text-[#4f4f4f] mt-1 leading-relaxed font-medium">{alert.message}</p>
       </div>
-      <span className="text-[10px] text-[#9fa6b2] font-mono whitespace-nowrap">{formatRelativeTime(alert.createdAt)}</span>
+      <span className="text-[11px] text-[#9fa6b2] font-mono whitespace-nowrap mt-1">{formatRelativeTime(alert.timestamp)}</span>
     </div>
   )
 }
@@ -228,10 +232,10 @@ export default function AdminDashboard() {
       {/* ═══ Alerts ═══ */}
       {alerts.length > 0 && (
         <div className="mb-8 space-y-3 opacity-0 animate-slide-in-up stagger-6">
-          <h3 className="text-[11px] font-bold text-[#9fa6b2] uppercase tracking-[0.15em] px-1">Active Alerts</h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {alerts.map((alert, idx) => (
-              <AlertItem key={alert.id} alert={alert} idx={idx} />
+          <h3 className="text-[11px] font-bold text-[#9fa6b2] uppercase tracking-[0.15em] px-1">Early Warnings</h3>
+          <div className="flex flex-col gap-4">
+            {alerts.map((alert) => (
+              <EarlyWarningBanner key={alert.id} alert={alert} />
             ))}
           </div>
         </div>

@@ -5,6 +5,7 @@ services:
     plan: free
     buildCommand: npm install && npm run build && cd backend && npm install && npx prisma generate
     startCommand: npm start
+    preDeployCommand: cd backend && npx prisma db push --accept-data-loss && npm run seed
     envVars:
       - key: DATABASE_URL
         fromDatabase:

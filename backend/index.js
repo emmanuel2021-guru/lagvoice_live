@@ -24,6 +24,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/preferences', require('./routes/preferencesRoutes'));
+app.use('/api/evaluations', require('./routes/evaluationRoutes'));
+app.use('/api/polls', require('./routes/pollRoutes'));
+app.use('/api/peer-reviews', require('./routes/peerReviewRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

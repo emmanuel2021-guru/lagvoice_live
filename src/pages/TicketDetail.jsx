@@ -3,8 +3,10 @@
  * Complaint lifecycle adapts based on category and current stage
  * Dark mode support via shared useDarkMode hook
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+import { ticketService } from '../services/ticketService'
 import { TICKET_STATUS_CONFIG } from '../utils/constants'
 import { formatRelativeTime } from '../utils/formatters'
 import { useDarkMode } from '../hooks/useDarkMode'
@@ -93,6 +95,9 @@ export default function TicketDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
   const dark = useDarkMode()
+  const { user, isAdmin, isFaculty, isStaff, isExternal } = useAuth()
+  const canManagePipeline = isAdmin || isFaculty || isStaff || isExternal
+  
   const [comment, setComment] = useState('')
 
   const [ticket, setTicket] = useState(null)
@@ -119,11 +124,18 @@ export default function TicketDetail() {
   if (loading) return <div className="p-8 text-center text-ink/40">Loading ticket...</div>
   if (error || !ticket) return <div className="p-8 text-center text-red-500">{error || 'Ticket not found'}</div>
 
-  const pipeline = CATEGORY_PIPELINES[ticket.categoryId] || CATEGORY_PIPELINES.infrastructure
-  const currentStepIdx = Math.max(0, pipeline.findIndex(s => s.key === ticket.status))
-  const progress = getProgressPercent(ticket.status, pipeline)
+  const pipeline = CATEGORY_PIPELINES[ticket.category.toLowerCase()] || CATEGORY_PIPELINES.infrastructure
+  const currentStepIdx = Math.max(0, pipeline.findIndex(s => s.key === ticket.pipelineStep))
+  const progress = getProgressPercent(ticket.pipelineStep, pipeline)
   const status = TICKET_STATUS_CONFIG[ticket.status === 'submitted' ? 'pending' : ticket.status] || TICKET_STATUS_CONFIG.pending
-  const timeline = [{ step: 'submitted', time: ticket.createdAt, by: ticket.submittedBy?.name || 'You' }]
+  
+  // Map timeline
+  const timeline = (ticket.timeline || []).map(t => ({
+    step: t.step,
+    time: t.createdAt,
+    by: t.actor?.name || 'System'
+  }))
+
   const author = ticket.submittedBy?.name || 'Student'
 
   const card = dark ? 'bg-[#1e293b]' : 'bg-white'
@@ -136,16 +148,24 @@ export default function TicketDetail() {
   const textFaint = dark ? 'text-slate-500' : 'text-[#9fa6b2]/50'
   const placeholderTone = dark ? 'placeholder:text-slate-500' : 'placeholder:text-[#9fa6b2]'
 
-  const addComment = () => {
+  const addComment = async () => {
     if (!comment.trim()) return
-    setComments(prev => [...prev, {
-      id: Date.now(),
-      author,
-      role: 'student',
-      text: comment,
-      time: new Date().toISOString(),
-    }])
-    setComment('')
+    try {
+      const newComment = await ticketService.addComment(ticket.id, comment)
+      setComments(prev => [...prev, newComment])
+      setComment('')
+    } catch (err) {
+      alert('Failed to add comment')
+    }
+  }
+
+  const advancePipeline = async (nextStepKey) => {
+    try {
+      const updatedTicket = await ticketService.updatePipeline(ticket.id, nextStepKey, nextStepKey === 'resolved' ? 'resolved' : 'under_review')
+      setTicket(updatedTicket)
+    } catch (err) {
+      alert('Failed to advance pipeline')
+    }
   }
 
   return (
@@ -236,9 +256,20 @@ export default function TicketDetail() {
                     </div>
                   )}
                   {isCurrent && (
-                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1266f1]/10 text-[#1266f1] text-[10px] font-semibold">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#1266f1] animate-pulse" />
-                      In Progress
+                    <div className="mt-2 flex items-center gap-3">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1266f1]/10 text-[#1266f1] text-[10px] font-semibold">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#1266f1] animate-pulse" />
+                        In Progress
+                      </div>
+                      
+                      {canManagePipeline && i < pipeline.length - 1 && (
+                        <button
+                          onClick={() => advancePipeline(pipeline[i + 1].key)}
+                          className="px-3 py-1 bg-white dark:bg-[#1e293b] border border-[#E4E8EE] dark:border-white/10 rounded-lg text-[11px] font-medium text-[#1266f1] hover:bg-[#F5F7FA] dark:hover:bg-white/5 transition-colors shadow-sm"
+                        >
+                          Mark Done & Advance
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

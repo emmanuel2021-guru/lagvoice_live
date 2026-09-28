@@ -2,44 +2,8 @@
  * StudentPolls — View and respond to admin-created polls
  * Polls created by administrators are visible here for students to participate in
  */
-import { useState } from 'react'
-
-const POLLS = [
-  {
-    id: 1,
-    title: 'Campus Security Survey',
-    description: 'Rate your sense of safety on campus. Your responses help us improve security measures across all areas of the university.',
-    status: 'active',
-    deadline: '2026-09-15',
-    target: 'All Students',
-    options: ['Very Safe', 'Safe', 'Neutral', 'Unsafe', 'Very Unsafe'],
-    totalResponses: 342,
-    responded: false,
-  },
-  {
-    id: 2,
-    title: 'Proposed Fee Structure Change',
-    description: 'The administration is considering adjusting fees for next semester. Share your sentiment on the proposed changes.',
-    status: 'active',
-    deadline: '2026-09-20',
-    target: 'All Students',
-    options: ['Strongly Support', 'Support', 'Neutral', 'Oppose', 'Strongly Oppose'],
-    totalResponses: 189,
-    responded: false,
-  },
-  {
-    id: 3,
-    title: 'Library Hours Extension',
-    description: 'Should the university library extend operating hours during exam periods? Cast your vote below.',
-    status: 'closed',
-    deadline: '2026-08-01',
-    target: 'All Students',
-    options: ['Yes, extend to 10pm', 'Yes, extend to 11pm', 'Current hours are fine', 'No opinion'],
-    totalResponses: 567,
-    responded: true,
-    results: [234, 189, 98, 46],
-  },
-]
+import { useState, useEffect } from 'react'
+import { pollService } from '../services/pollService'
 
 function PollOption({ label, index, selected, onSelect, disabled }) {
   return (
@@ -84,23 +48,56 @@ function ResultBar({ label, count, total, index }) {
 }
 
 export default function StudentPolls() {
-  const [polls, setPolls] = useState(POLLS)
+  const [polls, setPolls] = useState([])
   const [selectedOptions, setSelectedOptions] = useState({})
-  const [submittedPolls, setSubmittedPolls] = useState(new Set(
-    POLLS.filter(p => p.responded).map(p => p.id)
-  ))
+  const [submittedPolls, setSubmittedPolls] = useState(new Set())
+  const [loading, setLoading] = useState(true)
+
+  const fetchPolls = async () => {
+    try {
+      const data = await pollService.getPolls()
+      setPolls(data)
+      const submitted = new Set(data.filter(p => p.responded).map(p => p.id))
+      setSubmittedPolls(submitted)
+      
+      const options = {}
+      data.forEach(p => {
+        if (p.responded) options[p.id] = p.userOptionIndex
+      })
+      setSelectedOptions(options)
+    } catch (err) {
+      console.error('Failed to fetch polls', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPolls()
+  }, [])
 
   const handleSelect = (pollId, optionIndex) => {
     setSelectedOptions(prev => ({ ...prev, [pollId]: optionIndex }))
   }
 
-  const handleSubmit = (pollId) => {
-    setSubmittedPolls(prev => new Set([...prev, pollId]))
-    // In a real app, this would send the response to the API
+  const handleSubmit = async (pollId) => {
+    try {
+      await pollService.submitResponse(pollId, selectedOptions[pollId])
+      setSubmittedPolls(prev => new Set([...prev, pollId]))
+      // Refresh to get actual stats
+      fetchPolls()
+    } catch (err) {
+      console.error('Failed to submit poll', err)
+      alert(err.response?.data?.message || 'Failed to submit vote')
+    }
   }
 
   const activePolls = polls.filter(p => p.status === 'active')
   const closedPolls = polls.filter(p => p.status === 'closed')
+
+  if (loading) {
+    return <div className="text-center py-10 text-[#9fa6b2]">Loading polls...</div>
+  }
 
   return (
     <div className="space-y-6">

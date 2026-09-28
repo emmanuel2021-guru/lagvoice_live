@@ -18,6 +18,8 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
       student: '/student',
       faculty: '/faculty',
       admin: '/admin',
+      staff: '/staff',
+      'non-staff': '/non-staff'
     }
     return <Navigate to={dashboards[role] || '/login'} replace />
   }

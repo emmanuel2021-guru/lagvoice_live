@@ -66,7 +66,7 @@ export default function FeedbackForm() {
     gpsLat: null, gpsLng: null,
   })
   const [images, setImages] = useState([])
-  const [trackingId] = useState(generateTrackingId())
+  const [trackingId, setTrackingId] = useState(generateTrackingId())
   const [submitting, setSubmitting] = useState(false)
   const [geoLoading, setGeoLoading] = useState(false)
 
@@ -103,30 +103,36 @@ export default function FeedbackForm() {
 
   const handleSubmit = async () => {
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 1500))
 
-    const complaint = {
-      id: Date.now(),
-      trackingId,
-      title: form.title,
-      description: form.description,
-      category: selectedCategory?.label || form.category,
-      categoryId: form.category,
-      subcategory: form.subcategory,
-      location: form.location,
-      gpsLat: form.gpsLat,
-      gpsLng: form.gpsLng,
-      urgency: form.urgency,
-      anonymous: form.anonymous,
-      images: images.map(i => i.name),
-      status: 'submitted',
-      createdAt: new Date().toISOString(),
+    try {
+      const { ticketService } = await import('../services/ticketService')
+      
+      const complaintData = {
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        subcategory: form.subcategory,
+        location: form.location,
+        urgency: form.urgency,
+        isAnonymous: form.anonymous,
+        images: images.map(i => i.file)
+      }
+      
+      const response = await ticketService.createTicket(complaintData)
+      
+      // Update tracking ID for the success screen
+      if (response && response.ticket && response.ticket.trackingId) {
+        setTrackingId(response.ticket.trackingId)
+        setStep(3)
+      } else {
+        setStep(3)
+      }
+    } catch (err) {
+      console.error('Failed to submit ticket:', err)
+      alert('Failed to submit ticket. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
-    const existing = readArray(STORAGE_KEYS.complaints).filter((c) => c && typeof c === 'object')
-    writeJSON(STORAGE_KEYS.complaints, [complaint, ...existing])
-
-    setSubmitting(false)
-    setStep(3)
   }
 
   // Success state

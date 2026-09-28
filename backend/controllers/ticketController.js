@@ -26,10 +26,17 @@ exports.createTicket = async (req, res, next) => {
         location,
         isAnonymous: isAnonymous === 'true' || isAnonymous === true,
         images: JSON.stringify(images),
-        submittedById: req.user.id
+        submittedById: req.user.id,
+        timeline: {
+          create: [{
+            step: 'submitted',
+            actorId: req.user.id
+          }]
+        }
       },
       include: {
-        submittedBy: { select: { name: true, email: true } }
+        submittedBy: { select: { name: true, email: true } },
+        timeline: { include: { actor: { select: { name: true } } } }
       }
     });
 
@@ -88,6 +95,10 @@ exports.getTicketById = async (req, res, next) => {
             author: { select: { name: true, role: true } }
           },
           orderBy: { createdAt: 'asc' }
+        },
+        timeline: {
+          include: { actor: { select: { name: true } } },
+          orderBy: { createdAt: 'asc' }
         }
       }
     });
@@ -141,6 +152,37 @@ exports.updateTicketStatus = async (req, res, next) => {
     const ticket = await prisma.ticket.update({
       where: { id: parseInt(req.params.id) },
       data: { status }
+    });
+
+    res.status(200).json({ success: true, ticket });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateTicketPipeline = async (req, res, next) => {
+  try {
+    const { pipelineStep, status } = req.body;
+    const ticketId = parseInt(req.params.id);
+
+    const ticket = await prisma.ticket.update({
+      where: { id: ticketId },
+      data: { 
+        pipelineStep,
+        ...(status && { status }),
+        timeline: {
+          create: [{
+            step: pipelineStep,
+            actorId: req.user.id
+          }]
+        }
+      },
+      include: {
+        timeline: {
+          include: { actor: { select: { name: true } } },
+          orderBy: { createdAt: 'asc' }
+        }
+      }
     });
 
     res.status(200).json({ success: true, ticket });

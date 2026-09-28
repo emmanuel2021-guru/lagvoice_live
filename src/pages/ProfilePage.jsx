@@ -14,6 +14,7 @@ import { useDarkMode } from '../hooks/useDarkMode'
 import { STORAGE_KEYS, readObject, removeKey, writeJSON } from '../utils/storage'
 import { DEPARTMENTS, FACULTIES, GENDERS, LEVELS, PROGRAMMES, SESSIONS, roleLabel } from '../services/userService'
 import { ticketService } from '../services/ticketService'
+import { preferenceService } from '../services/preferenceService'
 const ACTIVITY = []
 
 const ICONS = {
@@ -185,10 +186,9 @@ export default function ProfilePage() {
   const [errors, setErrors] = useState({})
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(false)
-  const [prefs, setPrefs] = useState(() => ({
-    email: true, push: true, sms: false, complaints: true, evaluations: true, polls: true,
-    ...readObject(STORAGE_KEYS.prefs),
-  }))
+  const [prefs, setPrefs] = useState({
+    email: true, push: true, sms: false, complaints: true, evaluations: true, polls: true
+  })
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' })
   const [passwordState, setPasswordState] = useState({ status: 'idle', message: '' })
   const [twoFactor, setTwoFactor] = useState(false)
@@ -209,7 +209,27 @@ export default function ProfilePage() {
         console.error('Failed to fetch ticket stats', err)
       }
     }
+    
+    const fetchPreferences = async () => {
+      try {
+        const data = await preferenceService.getPreferences();
+        if (data) {
+          setPrefs({
+            email: data.email ?? true,
+            push: data.push ?? true,
+            sms: data.sms ?? false,
+            complaints: data.complaints ?? true,
+            evaluations: data.evaluations ?? true,
+            polls: data.polls ?? true,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch preferences', err);
+      }
+    };
+
     fetchTickets()
+    fetchPreferences()
   }, [])
   // Sync profile when user updates
   useEffect(() => {
@@ -217,11 +237,6 @@ export default function ProfilePage() {
       setProfile(user)
     }
   }, [user])
-
-  // Preferences are the one thing saved as you toggle, no submit button.
-  useEffect(() => {
-    writeJSON(STORAGE_KEYS.prefs, prefs)
-  }, [prefs])
 
   const completion = useMemo(() => {
     const filled = COMPLETION_FIELDS.filter((key) => String(profile[key] || '').trim().length > 0)
@@ -323,10 +338,18 @@ export default function ProfilePage() {
     setPasswordState({ status: 'success', message: 'Password updated. Use it next time you sign in.' })
   }
 
-  const handlePrefs = (key) => (value) => {
-    setPrefs((prev) => ({ ...prev, [key]: value }))
-    setPrefsSaved(true)
-    setTimeout(() => setPrefsSaved(false), 1500)
+  const handlePrefs = (key) => async (value) => {
+    const nextPrefs = { ...prefs, [key]: value };
+    setPrefs(nextPrefs);
+    try {
+      await preferenceService.updatePreferences(nextPrefs);
+      setPrefsSaved(true);
+      setTimeout(() => setPrefsSaved(false), 1500);
+    } catch (err) {
+      console.error('Failed to save preference', err);
+      // Revert on failure
+      setPrefs(prefs);
+    }
   }
 
   const confirmLogout = () => {

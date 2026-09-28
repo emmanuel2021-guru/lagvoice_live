@@ -13,6 +13,7 @@ const ROLES = [
   { id: 'student', label: 'Student' },
   { id: 'staff', label: 'Staff' },
   { id: 'non-staff', label: 'Non-Staff' },
+  { id: 'admin', label: 'Administrator' },
 ]
 
 /* ── Inline validation message (stable module-level component) ── */
@@ -198,28 +199,20 @@ export default function AuthPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault()
-    // Same mapping as sign-up: students get the student portal, Staff and
-    // Non-Staff share the staff portal, and the category rides along so the
-    // profile shows the right label.
-    const internalRole = form.role === 'student' ? 'student' : 'faculty'
-    await login(form.email, form.password, internalRole, form.role === 'student' ? '' : form.role)
-    navigate(`/${internalRole}`)
+    const result = await login(form.email, form.password, form.role)
+    if (result?.meta?.requestStatus === 'fulfilled') {
+      navigate(`/${result.payload?.user?.role || form.role}`)
+    }
   }
 
   const handleRegister = async (e) => {
     e.preventDefault()
-    // Student / Staff / Non-Staff are what the form collects; Staff and
-    // Non-Staff share the staff portal, and the category rides along on the
-    // profile so every screen can show the right label.
-    const internalRole = form.role === 'student' ? 'student' : 'faculty'
     const result = await registerUser({
       ...form,
-      role: internalRole,
-      staffCategory: form.role === 'student' ? '' : form.role,
+      role: form.role,
     })
     if (result?.meta?.requestStatus === 'fulfilled') {
-      // Registration signs you in, so land on the dashboard for your role.
-      navigate(`/${result.payload?.user?.role || internalRole}`)
+      navigate(`/${result.payload?.user?.role || form.role}`)
     }
   }
 
@@ -562,20 +555,11 @@ export default function AuthPage() {
                 <FieldError message={errText('studentId')} />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Faculty</label>
-                  <select name="faculty" value={form.faculty} onChange={handleChange} className={selectCls('faculty')} disabled={form.role === 'non-staff'}>
-                    {form.role === 'non-staff' && <option value="">Not applicable</option>}
-                    {FACULTIES.map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Phone Number</label>
-                  <input name="phone" type="tel" placeholder="080 0000 0000" value={form.phone} onChange={handleChange}
-                    className={inputCls('phone')} />
-                  <FieldError message={errText('phone')} />
-                </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-1.5">Phone Number</label>
+                <input name="phone" type="tel" placeholder="080 0000 0000" value={form.phone} onChange={handleChange}
+                  className={inputCls('phone')} />
+                <FieldError message={errText('phone')} />
               </div>
               </div>
               )}
@@ -625,7 +609,6 @@ export default function AuthPage() {
                     ['Role', ROLES.find(r => r.id === form.role)?.label || form.role],
                     ['Department', form.department || '—'],
                     [form.role === 'student' ? 'Student ID' : 'Staff ID', form.studentId || '—'],
-                    ['Faculty', form.role === 'non-staff' ? 'Not applicable' : form.faculty],
                     ['Phone', form.phone || '—'],
                   ].map(([k, v]) => (
                     <div key={k} className="flex items-center justify-between gap-3 text-[12px]">

@@ -22,9 +22,13 @@ const EvaluationForm = lazy(() => import('./pages/EvaluationForm'))
 const AdminComplaints = lazy(() => import('./pages/AdminComplaints'))
 const AdminPolls = lazy(() => import('./pages/AdminPolls'))
 const AdminReports = lazy(() => import('./pages/AdminReports'))
+const AdminEvaluations = lazy(() => import('./pages/AdminEvaluations'))
+const AdminUsers = lazy(() => import('./pages/AdminUsers'))
+const AdminSettings = lazy(() => import('./pages/AdminSettings'))
 const StudentPolls = lazy(() => import('./pages/StudentPolls'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const StaffDashboard = lazy(() => import('./pages/StaffDashboard'))
+const FacultyPeerReview = lazy(() => import('./pages/FacultyPeerReview'))
 import StaffLayout from './components/common/Layout/StaffLayout'
 
 // Loading fallback
@@ -166,7 +170,7 @@ export default function App() {
           path="/admin/evaluations"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout><PlaceholderPage title="Evaluations" /></AdminLayout>
+              <AdminLayout><AdminEvaluations /></AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -190,7 +194,7 @@ export default function App() {
           path="/admin/users"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout><PlaceholderPage title="Users" /></AdminLayout>
+              <AdminLayout><AdminUsers /></AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -198,7 +202,7 @@ export default function App() {
           path="/admin/settings"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout><PlaceholderPage title="Settings" /></AdminLayout>
+              <AdminLayout><AdminSettings /></AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -209,6 +213,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['faculty']}>
               <AdminLayout><FacultyDashboard /></AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/peer-review"
+          element={
+            <ProtectedRoute allowedRoles={['faculty']}>
+              <AdminLayout><FacultyPeerReview /></AdminLayout>
             </ProtectedRoute>
           }
         />

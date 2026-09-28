@@ -5,11 +5,11 @@
  * (plus university-wide GST courses). Ratings persist to storage, courses
  * already evaluated are marked, and progress is computed per course.
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCoursesForDepartment } from '../utils/courses'
 import { useAuth } from '../hooks/useAuth'
-import { STORAGE_KEYS, readArray, writeJSON } from '../utils/storage'
+import { evaluationService } from '../services/evaluationService'
 
 const LIKERT_OPTIONS = [
   { value: 5, label: 'Strongly Agree' },
@@ -56,12 +56,22 @@ export default function EvaluationForm() {
   const department = profile.department || ''
   const courses = getCoursesForDepartment(department)
 
-  const [evaluatedCodes, setEvaluatedCodes] = useState(() =>
-    readArray(STORAGE_KEYS.evaluations)
-      .filter(e => e && typeof e === 'object')
-      .map(e => e.courseCode),
-  )
+  const [evaluatedCodes, setEvaluatedCodes] = useState([])
   const [selectedCourse, setSelectedCourse] = useState(null)
+  
+  useEffect(() => {
+    const fetchEvaluations = async () => {
+      try {
+        const codes = await evaluationService.getMyEvaluations()
+        if (Array.isArray(codes)) {
+          setEvaluatedCodes(codes)
+        }
+      } catch (err) {
+        console.error('Failed to fetch evaluated courses', err)
+      }
+    }
+    fetchEvaluations()
+  }, [])
   const [likert, setLikert] = useState({})
   const [openEnded, setOpenEnded] = useState({ likes: '', suggestions: '' })
   const [overallRating, setOverallRating] = useState(0)
@@ -74,33 +84,33 @@ export default function EvaluationForm() {
 
   const handleSubmit = async () => {
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 1200))
-
-    const evaluation = {
-      id: Date.now(),
-      courseCode: selectedCourse.code,
-      courseName: selectedCourse.name,
-      lecturer: selectedCourse.lecturer,
-      department,
-      level: selectedCourse.level,
-      likert,
-      overallRating,
-      likes: openEnded.likes,
-      suggestions: openEnded.suggestions,
-      evaluatedBy: profile.name || 'Anonymous',
-      createdAt: new Date().toISOString(),
+    
+    try {
+      const evaluationData = {
+        courseCode: selectedCourse.code,
+        courseName: selectedCourse.name,
+        lecturer: selectedCourse.lecturer,
+        department,
+        level: selectedCourse.level,
+        likert,
+        overallRating,
+        likes: openEnded.likes,
+        suggestions: openEnded.suggestions,
+      }
+      
+      await evaluationService.submitEvaluation(evaluationData)
+      setEvaluatedCodes(prev => [evaluationData.courseCode, ...prev])
+      setSubmitted(true)
+    } catch (err) {
+      console.error('Failed to submit evaluation', err)
+      alert(err.response?.data?.message || 'Failed to submit evaluation')
+    } finally {
+      setSubmitting(false)
     }
-    const existing = readArray(STORAGE_KEYS.evaluations).filter(e => e && typeof e === 'object')
-    writeJSON(STORAGE_KEYS.evaluations, [evaluation, ...existing])
-    setEvaluatedCodes(prev => [evaluation.courseCode, ...prev])
-
-    setSubmitting(false)
-    setSubmitted(true)
   }
 
   const resetForm = () => {
     setSelectedCourse(null)
-    setRatings({})
     setLikert({})
     setOpenEnded({ likes: '', suggestions: '' })
     setOverallRating(0)

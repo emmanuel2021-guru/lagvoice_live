@@ -60,4 +60,9 @@ export const ticketService = {
     const response = await api.put(`/tickets/${ticketId}/status`, { status: TICKET_STATUS.PENDING })
     return { success: true, message: 'Ticket has been reopened.', ticket: response.ticket }
   },
+
+  async updatePipeline(ticketId, pipelineStep, status) {
+    const response = await api.put(`/tickets/${ticketId}/pipeline`, { pipelineStep, status })
+    return response.ticket
+  }
 }
