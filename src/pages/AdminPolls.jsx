@@ -7,6 +7,11 @@ import { useState } from 'react'
 export default function AdminPolls() {
   const [activeTab, setActiveTab] = useState('active')
   const [showCreate, setShowCreate] = useState(false)
+  const [targetAudience, setTargetAudience] = useState('All Students')
+  const [specificTarget, setSpecificTarget] = useState('')
+
+  const faculties = ['Science', 'Arts', 'Engineering', 'Social Sciences']
+  const departments = ['Computer Science', 'Mathematics', 'Physics', 'History', 'Economics']
 
   const polls = []
 
@@ -45,10 +50,17 @@ export default function AdminPolls() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Target Audience</label>
-                <select className="w-full px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink focus:outline-none focus:ring-2 focus:ring-maroon/15 appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center]">
-                  <option>All Students</option>
-                  <option>Specific Faculty</option>
-                  <option>Specific Department</option>
+                <select 
+                  value={targetAudience}
+                  onChange={(e) => {
+                    setTargetAudience(e.target.value)
+                    setSpecificTarget('')
+                  }}
+                  className="w-full px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink focus:outline-none focus:ring-2 focus:ring-maroon/15 appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center]"
+                >
+                  <option value="All Students">All Students</option>
+                  <option value="Specific Faculty">Specific Faculty</option>
+                  <option value="Specific Department">Specific Department</option>
                 </select>
               </div>
               <div>
@@ -56,6 +68,27 @@ export default function AdminPolls() {
                 <input type="date" className="w-full px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink focus:outline-none focus:ring-2 focus:ring-maroon/15 transition-all" />
               </div>
             </div>
+
+            {/* Dynamic Specific Target Dropdown */}
+            {targetAudience !== 'All Students' && (
+              <div className="animate-fade-in">
+                <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">
+                  Select {targetAudience === 'Specific Faculty' ? 'Faculty' : 'Department'}
+                </label>
+                <select 
+                  value={specificTarget}
+                  onChange={(e) => setSpecificTarget(e.target.value)}
+                  className="w-full px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink focus:outline-none focus:ring-2 focus:ring-maroon/15 appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23800000%22%20d%3D%22M4.5%206l3.5%204%203.5-4z%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center]"
+                >
+                  <option value="" disabled>-- Select --</option>
+                  {targetAudience === 'Specific Faculty' 
+                    ? faculties.map(f => <option key={f} value={f}>{f}</option>)
+                    : departments.map(d => <option key={d} value={d}>{d}</option>)
+                  }
+                </select>
+              </div>
+            )}
+
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowCreate(false)} className="flex-1 py-3 rounded-xl border border-mist/70 text-ink/60 font-semibold text-[13px] hover:bg-cream transition-all">Cancel</button>
               <button className="flex-1 py-3 rounded-xl bg-maroon text-white font-semibold text-[13px] shadow-[0_2px_8px_rgba(128,0,0,0.2)] hover:bg-maroon-dark transition-all">Create Poll</button>

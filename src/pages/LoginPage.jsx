@@ -26,8 +26,10 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await login(form.email, form.password, form.role)
-    navigate(`/${form.role}`)
+    const resultAction = await login(form.email, form.password, form.role)
+    if (!resultAction.error) {
+      navigate(`/${resultAction.payload.user.role}`)
+    }
   }
 
   return (

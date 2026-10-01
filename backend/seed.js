@@ -64,6 +64,34 @@ async function main() {
     }
   });
 
+  const hod = await prisma.user.upsert({
+    where: { email: 'hod@unilag.edu.ng' },
+    update: {},
+    create: {
+      name: 'Prof. HOD Computer Science',
+      email: 'hod@unilag.edu.ng',
+      password: defaultPassword,
+      role: 'hod',
+      staffId: 'UNILAG/HOD/101',
+      department: 'Computer Science',
+      faculty: 'Science'
+    }
+  });
+
+  const dean = await prisma.user.upsert({
+    where: { email: 'dean@unilag.edu.ng' },
+    update: {},
+    create: {
+      name: 'Prof. Dean of Science',
+      email: 'dean@unilag.edu.ng',
+      password: defaultPassword,
+      role: 'dean',
+      staffId: 'UNILAG/DEAN/001',
+      department: 'Dean\'s Office',
+      faculty: 'Science'
+    }
+  });
+
   // 2. Create Tickets
   console.log('🎫 Creating tickets...');
   await prisma.ticket.createMany({
@@ -175,6 +203,41 @@ async function main() {
     ]
   });
 
+  // 5. Create Service Charters (SLAs)
+  console.log('📜 Creating Service Charters...');
+  await prisma.serviceCharter.upsert({
+    where: { department: 'Computer Science' },
+    update: {},
+    create: {
+      department: 'Computer Science',
+      slaHours: 48,
+      commitments: ['Respond to result queries within 48h', 'Address academic advisement emails within 24h'],
+      updatedById: admin.id
+    }
+  });
+
+  await prisma.serviceCharter.upsert({
+    where: { department: 'Mathematics' },
+    update: {},
+    create: {
+      department: 'Mathematics',
+      slaHours: 72,
+      commitments: ['Process missing scripts within 72h'],
+      updatedById: admin.id
+    }
+  });
+
+  await prisma.serviceCharter.upsert({
+    where: { department: 'Security Unit' },
+    update: {},
+    create: {
+      department: 'Security Unit',
+      slaHours: 24,
+      commitments: ['Respond to emergency security alerts immediately', 'Process ID card replacements within 24h'],
+      updatedById: admin.id
+    }
+  });
+
   console.log('✅ Seed completed successfully!');
   console.log('-------------------------------------------');
   console.log('Test Accounts (Password for all: Password123!)');
@@ -182,6 +245,8 @@ async function main() {
   console.log(`Staff:     ${staff.email}`);
   console.log(`Student:   ${student.email}`);
   console.log(`Non-Staff: ${nonStaff.email}`);
+  console.log(`HOD:       ${hod.email}`);
+  console.log(`Dean:      ${dean.email}`);
   console.log('-------------------------------------------');
 }
 

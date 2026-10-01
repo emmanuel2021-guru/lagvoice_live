@@ -7,13 +7,16 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../hooks/useAuth'
 import { useNotifications } from '../../../hooks/useNotifications'
 
-const staffNavItems = [
-  { label: 'Dashboard', path: '/staff', icon: 'grid' },
-  { label: 'Inbox', path: '/staff/inbox', icon: 'message' },
-  { label: 'Peer Review', path: '/staff/peer-review', icon: 'people' },
-  { label: 'Supervisory', path: '/staff/supervisory', icon: 'star' },
-  { label: 'Self-Assess', path: '/staff/self-assessment', icon: 'shield' }
-]
+const getStaffNavItems = (role) => {
+  const basePath = role === 'hod' ? '/hod' : role === 'dean' ? '/dean' : '/staff'
+  return [
+    { label: 'Dashboard', path: basePath, icon: 'grid' },
+    { label: 'Inbox', path: '/staff/inbox', icon: 'message' },
+    { label: 'Peer Review', path: '/staff/peer-review', icon: 'people' },
+    { label: 'Supervisory', path: '/staff/supervisory', icon: 'star' },
+    { label: 'Self-Assess', path: '/staff/self-assessment', icon: 'shield' }
+  ]
+}
 
 const nonStaffNavItems = [
   { label: 'Helpdesk', path: '/non-staff', icon: 'inbox' },
@@ -92,7 +95,7 @@ export default function StaffLayout({ children }) {
   const isHod = user?.role === 'hod' || user?.role === 'dean'
   const navItems = isNonStaff 
     ? nonStaffNavItems 
-    : staffNavItems.filter(item => {
+    : getStaffNavItems(user?.role).filter(item => {
         if ((item.path === '/staff/supervisory' || item.path === '/staff/self-assessment') && !isHod) return false
         return true
       })

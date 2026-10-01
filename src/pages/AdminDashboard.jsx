@@ -331,7 +331,7 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-2xl border border-[#E4E8EE] overflow-hidden opacity-0 animate-slide-in-up stagger-9">
         <div className="px-6 py-5 border-b border-[#E4E8EE]/50">
           <h3 className="text-[16px] font-bold text-[#262626]">Complaints by Department</h3>
-          <p className="text-[12px] text-[#9fa6b2] mt-0.5">Top reported departments</p>
+          <p className="text-[12px] text-[#9fa6b2] mt-0.5">Top reported complaints</p>
         </div>
         <div className="p-6">
           <div className="h-72">

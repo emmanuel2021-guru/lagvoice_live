@@ -36,7 +36,7 @@ const NonStaffPolls = lazy(() => import('./pages/NonStaffPolls'))
 const NonStaffMemos = lazy(() => import('./pages/NonStaffMemos'))
 const FacultyPeerReview = lazy(() => import('./pages/FacultyPeerReview'))
 const SupervisoryAssessment = lazy(() => import('./pages/SupervisoryAssessment'))
-const HodSelfAssessment = lazy(() => import('./pages/HodSelfAssessment'))
+const HodSelfAssessment = lazy(() => import('./pages/HodSelfAssessment')); const HodDashboard = lazy(() => import('./pages/HodDashboard')); const DeanDashboard = lazy(() => import('./pages/DeanDashboard'));
 import StaffLayout from './components/common/Layout/StaffLayout'
 
 // Loading fallback
@@ -86,11 +86,13 @@ export default function App() {
         <Route
           path="/staff"
           element={
-            <ProtectedRoute allowedRoles={['staff', 'non-staff', 'hod', 'dean']}>
+            <ProtectedRoute allowedRoles={['staff']}>
               <StaffLayout><StaffDashboard /></StaffLayout>
             </ProtectedRoute>
           }
         />
+          <Route path="/hod" element={<ProtectedRoute allowedRoles={['hod']}><StaffLayout><HodDashboard /></StaffLayout></ProtectedRoute>} />
+          <Route path="/dean" element={<ProtectedRoute allowedRoles={['dean']}><StaffLayout><DeanDashboard /></StaffLayout></ProtectedRoute>} />
         <Route
           path="/staff/inbox"
           element={
@@ -310,3 +312,4 @@ export default function App() {
     </Suspense>
   )
 }
+
