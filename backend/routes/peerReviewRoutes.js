@@ -9,7 +9,7 @@ const { protect, authorize } = require('../middleware/auth');
 const router = express.Router();
 
 router.use(protect);
-router.use(authorize('faculty', 'admin'));
+router.use(authorize('staff', 'faculty', 'admin'));
 
 router.post('/', submitReview);
 router.get('/', getReviewsForFaculty);

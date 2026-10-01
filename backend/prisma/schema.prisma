@@ -29,6 +29,15 @@ model User {
   
   reviewsGiven    PeerReview[] @relation("Reviewer")
   reviewsReceived PeerReview[] @relation("Reviewee")
+
+  supervisoryGiven    SupervisoryAssessment[] @relation("Supervisor")
+  supervisoryReceived SupervisoryAssessment[] @relation("SupervisedStaff")
+
+  qaAudits            QaChecklist[] @relation("QaAuditor")
+  selfAssessments     SelfAssessment[] @relation("SelfAssessmentSubmitter")
+  updatedCharters     ServiceCharter[] @relation("CharterUpdater")
+  sentMessages        InternalMessage[] @relation("SentMessages")
+  receivedMessages    InternalMessage[] @relation("ReceivedMessages")
 }
 
 model NotificationPreference {
@@ -56,6 +65,7 @@ model Ticket {
   pipelineStep String   @default("submitted") // New field for detailed tracking
   location    String?
   isAnonymous Boolean   @default(false)
+  slaDeadline DateTime?
   images      String?   // JSON string of paths or comma separated
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -162,4 +172,69 @@ model PeerReview {
   updatedAt     DateTime @updatedAt
 }
 
+model SupervisoryAssessment {
+  id            Int      @id @default(autoincrement())
+  
+  supervisor    User     @relation("Supervisor", fields: [supervisorId], references: [id])
+  supervisorId  Int
+  
+  staff         User     @relation("SupervisedStaff", fields: [staffId], references: [id])
+  staffId       Int
 
+  context       String?
+  scores        Json     // Object containing rubric scores
+  remarks       String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+
+model QaChecklist {
+  id           Int      @id @default(autoincrement())
+  department   String
+  auditorId    Int
+  auditor      User     @relation("QaAuditor", fields: [auditorId], references: [id])
+  checklistData Json
+  score        Int
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SelfAssessment {
+  id              Int      @id @default(autoincrement())
+  department      String
+  submittedById   Int
+  submittedBy     User     @relation("SelfAssessmentSubmitter", fields: [submittedById], references: [id])
+  accreditationBody String   
+  programName     String
+  responses       Json     
+  readinessScore  Int      
+  status          String   @default("submitted") 
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ServiceCharter {
+  id            Int      @id @default(autoincrement())
+  department    String   @unique
+  commitments   Json     
+  slaHours      Int      @default(48)
+  updatedById   Int
+  updatedBy     User     @relation("CharterUpdater", fields: [updatedById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model InternalMessage {
+  id          Int      @id @default(autoincrement())
+  subject     String
+  body        String
+  senderId    Int
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  recipientId Int
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}

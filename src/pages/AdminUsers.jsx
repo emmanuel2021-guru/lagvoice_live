@@ -4,20 +4,36 @@ import api from '../services/api'
 export default function AdminUsers() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get('/auth/users')
+      setUsers(res.data)
+    } catch (err) {
+      console.error('Failed to load users', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await api.get('/auth/users')
-        setUsers(res.data)
-      } catch (err) {
-        console.error('Failed to load users', err)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchUsers()
   }, [])
+
+  const handleSyncHR = async () => {
+    setSyncing(true)
+    try {
+      const res = await api.post('/auth/sync-hr')
+      alert(res.data.message)
+      await fetchUsers()
+    } catch (err) {
+      console.error('HR sync failed', err)
+      alert('Failed to sync with HR system')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -26,9 +42,30 @@ export default function AdminUsers() {
           <p className="text-[11px] font-bold text-[#1266f1] uppercase tracking-[0.15em] mb-1">User Management</p>
           <h1 className="text-[1.8rem] lg:text-[2.2rem] font-bold text-ink leading-tight tracking-tight">Users</h1>
         </div>
-        <button className="px-4 py-2 bg-[#1266f1] text-white rounded-xl text-[13px] font-semibold hover:bg-[#0e52c1] transition-all">
-          + Add User
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={handleSyncHR}
+            disabled={syncing}
+            className="px-4 py-2 border border-mist/80 text-ink/70 rounded-xl text-[13px] font-semibold hover:bg-mist/30 transition-all flex items-center gap-2 disabled:opacity-50"
+          >
+            {syncing ? (
+              <>
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                Syncing...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                Sync HR Data (Mock)
+              </>
+            )}
+          </button>
+          <button className="px-4 py-2 bg-[#1266f1] text-white rounded-xl text-[13px] font-semibold hover:bg-[#0e52c1] transition-all">
+            + Add User
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-mist/50 p-6 overflow-hidden">

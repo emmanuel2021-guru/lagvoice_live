@@ -40,7 +40,10 @@ exports.getReviewsForFaculty = async (req, res, next) => {
 exports.getFacultyMembers = async (req, res, next) => {
   try {
     const faculty = await prisma.user.findMany({
-      where: { role: 'faculty', id: { not: req.user.id } },
+      where: { 
+        role: { in: ['faculty', 'staff'] }, 
+        id: { not: req.user.id } 
+      },
       select: { id: true, name: true, department: true }
     });
     res.status(200).json({ success: true, faculty });

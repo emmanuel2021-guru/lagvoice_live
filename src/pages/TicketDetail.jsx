@@ -95,8 +95,8 @@ export default function TicketDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
   const dark = useDarkMode()
-  const { user, isAdmin, isFaculty, isStaff, isExternal } = useAuth()
-  const canManagePipeline = isAdmin || isFaculty || isStaff || isExternal
+  const { user, isAdmin, isFaculty, isStaff, isExternal, isNonStaff } = useAuth()
+  const canManagePipeline = isAdmin || isFaculty || isStaff || isExternal || isNonStaff
   
   const [comment, setComment] = useState('')
 
@@ -110,7 +110,16 @@ export default function TicketDetail() {
       setLoading(true)
       try {
         const data = await ticketService.getTicketById(id)
-        setTicket(data)
+        // Ensure images is an array since it is stored as a JSON string
+        let imagesArray = []
+        if (data.images) {
+          try {
+            imagesArray = typeof data.images === 'string' ? JSON.parse(data.images) : data.images
+          } catch (e) {
+            imagesArray = []
+          }
+        }
+        setTicket({ ...data, images: imagesArray })
         setComments(data.comments || [])
       } catch (err) {
         setError('Failed to fetch ticket details.')
@@ -125,8 +134,10 @@ export default function TicketDetail() {
   if (error || !ticket) return <div className="p-8 text-center text-red-500">{error || 'Ticket not found'}</div>
 
   const pipeline = CATEGORY_PIPELINES[ticket.category.toLowerCase()] || CATEGORY_PIPELINES.infrastructure
-  const currentStepIdx = Math.max(0, pipeline.findIndex(s => s.key === ticket.pipelineStep))
-  const progress = getProgressPercent(ticket.pipelineStep, pipeline)
+  const currentStepIdx = ticket.status === 'resolved' 
+    ? pipeline.length - 1 
+    : Math.max(0, pipeline.findIndex(s => s.key === ticket.pipelineStep))
+  const progress = ticket.status === 'resolved' ? 100 : getProgressPercent(ticket.pipelineStep, pipeline)
   const status = TICKET_STATUS_CONFIG[ticket.status === 'submitted' ? 'pending' : ticket.status] || TICKET_STATUS_CONFIG.pending
   
   // Map timeline
@@ -328,26 +339,30 @@ export default function TicketDetail() {
           </div>
         )}
         <div className="space-y-4 mb-4">
-          {comments.map(c => (
-            <div key={c.id} className={`flex gap-3 ${c.role === 'student' ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
-                c.role === 'admin' ? 'bg-[#1266f1]/10 text-[#1266f1]' : 'bg-[#ffa900]/10 text-[#ffa900]'
-              }`}>
-                {c.author.charAt(0)}
-              </div>
-              <div className={`max-w-[80%] ${c.role === 'student' ? 'text-right' : ''}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-[12px] font-semibold ${text1}`}>{c.author}</span>
-                  <span className={`text-[10px] ${text3} font-mono`}>{formatRelativeTime(c.time)}</span>
-                </div>
-                <div className={`text-[13px] ${text2} leading-relaxed rounded-xl p-3 ${
-                  c.role === 'admin' ? `${subtle} text-left` : 'bg-[#1266f1]/[0.05] text-left'
+          {comments.map(c => {
+            const authorName = c.author?.name || 'Unknown'
+            const authorRole = c.author?.role || 'user'
+            return (
+              <div key={c.id} className={`flex gap-3 ${authorRole === 'student' ? 'flex-row-reverse' : ''}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                  authorRole === 'admin' ? 'bg-[#1266f1]/10 text-[#1266f1]' : 'bg-[#ffa900]/10 text-[#ffa900]'
                 }`}>
-                  {c.text}
+                  {authorName.charAt(0).toUpperCase()}
+                </div>
+                <div className={`max-w-[80%] ${authorRole === 'student' ? 'text-right' : ''}`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-[12px] font-semibold ${text1}`}>{authorName}</span>
+                    <span className={`text-[10px] ${text3} font-mono`}>{formatRelativeTime(c.createdAt)}</span>
+                  </div>
+                  <div className={`text-[13px] ${text2} leading-relaxed rounded-xl p-3 ${
+                    authorRole === 'admin' ? `${subtle} text-left` : 'bg-[#1266f1]/[0.05] text-left'
+                  }`}>
+                    {c.message}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Add Comment */}

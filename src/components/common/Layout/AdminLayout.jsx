@@ -13,8 +13,11 @@ const adminNavItems = [
   { label: 'Overview', path: '/admin', icon: 'grid' },
   { label: 'Complaints', path: '/admin/complaints', icon: 'inbox' },
   { label: 'Evaluations', path: '/admin/evaluations', icon: 'star' },
+  { label: 'QA Audits', path: '/admin/qa', icon: 'shield' },
+  { label: 'Charters', path: '/admin/servicom', icon: 'shield' },
   { label: 'Polls', path: '/admin/polls', icon: 'chart' },
   { label: 'Reports', path: '/admin/reports', icon: 'file' },
+  { label: 'Inbox', path: '/admin/inbox', icon: 'message' },
   { label: 'Users', path: '/admin/users', icon: 'people' },
 ]
 
@@ -41,9 +44,19 @@ function NavIcon({ icon }) {
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
       </svg>
     ),
+    message: (
+      <svg className={s} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+      </svg>
+    ),
     star: (
       <svg className={s} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      </svg>
+    ),
+    shield: (
+      <svg className={s} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     ),
     chart: (

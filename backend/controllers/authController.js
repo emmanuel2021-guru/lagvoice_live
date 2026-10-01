@@ -169,3 +169,46 @@ exports.getAllUsers = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.syncHR = async (req, res, next) => {
+  try {
+    // Simulate API delay
+    await new Promise(r => setTimeout(r, 1500));
+
+    const bcrypt = require('bcryptjs');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('password123', salt);
+
+    // Insert mock staff
+    const hrStaff = [
+      {
+        email: 'hr.mock1@unilag.edu.ng',
+        name: 'Dr. Stella (HR Synced)',
+        password: hashedPassword,
+        role: 'staff',
+        department: 'Academic Planning',
+        faculty: 'Administration'
+      },
+      {
+        email: 'hr.mock2@unilag.edu.ng',
+        name: 'Prof. Ade (HR Synced)',
+        password: hashedPassword,
+        role: 'staff',
+        department: 'Quality Assurance',
+        faculty: 'Administration'
+      }
+    ];
+
+    for (const staff of hrStaff) {
+      await prisma.user.upsert({
+        where: { email: staff.email },
+        update: {},
+        create: staff
+      });
+    }
+
+    res.status(200).json({ success: true, message: 'Successfully synced 2 records from HR system' });
+  } catch (err) {
+    next(err);
+  }
+};

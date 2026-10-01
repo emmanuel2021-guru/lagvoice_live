@@ -15,6 +15,17 @@ exports.createTicket = async (req, res, next) => {
       images = req.files.map(file => `/uploads/${file.filename}`);
     }
 
+    // Determine SLA deadline based on the category (department)
+    let slaHours = 48; // default
+    const charter = await prisma.serviceCharter.findUnique({
+      where: { department: category }
+    });
+    if (charter && charter.slaHours) {
+      slaHours = charter.slaHours;
+    }
+    const slaDeadline = new Date();
+    slaDeadline.setHours(slaDeadline.getHours() + slaHours);
+
     const ticket = await prisma.ticket.create({
       data: {
         trackingId: generateTrackingId(),
@@ -27,6 +38,7 @@ exports.createTicket = async (req, res, next) => {
         isAnonymous: isAnonymous === 'true' || isAnonymous === true,
         images: JSON.stringify(images),
         submittedById: req.user.id,
+        slaDeadline,
         timeline: {
           create: [{
             step: 'submitted',
@@ -149,9 +161,13 @@ exports.updateTicketStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
     
+    let dataToUpdate = { status };
+    if (status === 'resolved') dataToUpdate.pipelineStep = 'resolved';
+    else if (status === 'pending') dataToUpdate.pipelineStep = 'submitted';
+
     const ticket = await prisma.ticket.update({
       where: { id: parseInt(req.params.id) },
-      data: { status }
+      data: dataToUpdate
     });
 
     res.status(200).json({ success: true, ticket });

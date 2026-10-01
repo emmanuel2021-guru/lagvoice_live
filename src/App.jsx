@@ -23,12 +23,20 @@ const AdminComplaints = lazy(() => import('./pages/AdminComplaints'))
 const AdminPolls = lazy(() => import('./pages/AdminPolls'))
 const AdminReports = lazy(() => import('./pages/AdminReports'))
 const AdminEvaluations = lazy(() => import('./pages/AdminEvaluations'))
+const AdminQaAudits = lazy(() => import('./pages/AdminQaAudits'))
+const AdminServicomCharters = lazy(() => import('./pages/AdminServicomCharters'))
 const AdminUsers = lazy(() => import('./pages/AdminUsers'))
 const AdminSettings = lazy(() => import('./pages/AdminSettings'))
 const StudentPolls = lazy(() => import('./pages/StudentPolls'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const StaffDashboard = lazy(() => import('./pages/StaffDashboard'))
+const SecureInbox = lazy(() => import('./pages/SecureInbox'))
+const NonStaffDashboard = lazy(() => import('./pages/NonStaffDashboard'))
+const NonStaffPolls = lazy(() => import('./pages/NonStaffPolls'))
+const NonStaffMemos = lazy(() => import('./pages/NonStaffMemos'))
 const FacultyPeerReview = lazy(() => import('./pages/FacultyPeerReview'))
+const SupervisoryAssessment = lazy(() => import('./pages/SupervisoryAssessment'))
+const HodSelfAssessment = lazy(() => import('./pages/HodSelfAssessment'))
 import StaffLayout from './components/common/Layout/StaffLayout'
 
 // Loading fallback
@@ -78,15 +86,23 @@ export default function App() {
         <Route
           path="/staff"
           element={
-            <ProtectedRoute allowedRoles={['staff', 'non-staff']}>
+            <ProtectedRoute allowedRoles={['staff', 'non-staff', 'hod', 'dean']}>
               <StaffLayout><StaffDashboard /></StaffLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/inbox"
+          element={
+            <ProtectedRoute allowedRoles={['staff', 'non-staff', 'hod', 'dean']}>
+              <StaffLayout><SecureInbox /></StaffLayout>
             </ProtectedRoute>
           }
         />
         <Route
           path="/staff/ticket/:id"
           element={
-            <ProtectedRoute allowedRoles={['staff', 'non-staff']}>
+            <ProtectedRoute allowedRoles={['staff', 'non-staff', 'hod', 'dean']}>
               <StaffLayout><TicketDetail /></StaffLayout>
             </ProtectedRoute>
           }
@@ -95,11 +111,50 @@ export default function App() {
           path="/non-staff"
           element={
             <ProtectedRoute allowedRoles={['staff', 'non-staff']}>
-              <StaffLayout><StaffDashboard /></StaffLayout>
+              <StaffLayout><NonStaffDashboard /></StaffLayout>
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/non-staff/polls"
+          element={
+            <ProtectedRoute allowedRoles={['non-staff']}>
+              <StaffLayout><NonStaffPolls /></StaffLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/non-staff/memos"
+          element={
+            <ProtectedRoute allowedRoles={['non-staff']}>
+              <StaffLayout><NonStaffMemos /></StaffLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/peer-review"
+          element={
+            <ProtectedRoute allowedRoles={['staff', 'faculty', 'hod', 'dean']}>
+              <StaffLayout><FacultyPeerReview /></StaffLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/supervisory"
+          element={
+            <ProtectedRoute allowedRoles={['hod', 'dean']}>
+              <StaffLayout><SupervisoryAssessment /></StaffLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/self-assessment"
+          element={
+            <ProtectedRoute allowedRoles={['hod', 'dean']}>
+              <StaffLayout><HodSelfAssessment /></StaffLayout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/student/feedback"
           element={
@@ -175,6 +230,22 @@ export default function App() {
           }
         />
         <Route
+          path="/admin/qa"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout><AdminQaAudits /></AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/servicom"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout><AdminServicomCharters /></AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/polls"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
@@ -187,6 +258,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminLayout><AdminReports /></AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/inbox"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout><SecureInbox /></AdminLayout>
             </ProtectedRoute>
           }
         />

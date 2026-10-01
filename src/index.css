@@ -399,7 +399,7 @@
 .dark .hover\:bg-cream\/50:hover { background-color: rgba(30,41,59,0.8) !important; }
 .dark .hover\:bg-cream\/30:hover { background-color: rgba(30,41,59,0.5) !important; }
 .dark .bg-\[\#F5F7FA\] { background-color: #1e293b !important; }
-.dark select { background-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 16 16%22%3E%3Cpath fill=%22%2394a3b8%22 d=%22M4.5 6l3.5 4 3.5-4z%22/%3E%3C/svg%3E') !important; }
+.dark select { background-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 16 16%22%3E%3Cpath fill=%22%2394a3b8%22 d=%22M4.5 6l3.5 4 3.5-4z%22/%3E%3C/svg%3E') !important; background-repeat: no-repeat !important; background-position: right 10px center !important; }
 .dark .bg-cream\/30 { background-color: rgba(30,41,59,0.5) !important; }
 .dark .bg-cream\/50 { background-color: rgba(30,41,59,0.8) !important; }
 

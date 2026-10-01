@@ -28,6 +28,10 @@ app.use('/api/preferences', require('./routes/preferencesRoutes'));
 app.use('/api/evaluations', require('./routes/evaluationRoutes'));
 app.use('/api/polls', require('./routes/pollRoutes'));
 app.use('/api/peer-reviews', require('./routes/peerReviewRoutes'));
+app.use('/api/supervisory', require('./routes/supervisoryRoutes'));
+app.use('/api/qa', require('./routes/qaRoutes'));
+app.use('/api/servicom', require('./routes/servicomRoutes'));
+app.use('/api/messages', require('./routes/messageRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -48,4 +52,8 @@ app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+
+  // Start background escalation cron job
+  const { startEscalationJob } = require('./services/escalationService');
+  startEscalationJob();
 });

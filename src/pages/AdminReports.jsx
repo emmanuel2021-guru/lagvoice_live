@@ -4,6 +4,12 @@
  */
 import { useState } from 'react'
 
+import { qaService } from '../services/qaService'
+import { ticketService } from '../services/ticketService'
+import { servicomService } from '../services/servicomService'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
+
 const REPORT_TYPES = [
   { id: 'nuc', title: 'NUC Accreditation Report', description: 'Generate a formatted report for the National Universities Commission', icon: (
     <svg className="w-5 h-5 text-maroon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -27,9 +33,194 @@ export default function AdminReports() {
 
   const handleGenerate = async (type) => {
     setGenerating(type)
-    await new Promise(r => setTimeout(r, 2000))
-    setGenerating(null)
-    alert(`${REPORT_TYPES.find(r => r.id === type)?.title} generated successfully!`)
+    try {
+      if (type === 'nuc') {
+        const result = await qaService.getAllSelfAssessments()
+        const assessments = result.data || result
+        const nucAssessments = assessments.filter(a => a.accreditationBody === 'NUC')
+
+        const doc = new jsPDF()
+        
+        // Header
+        doc.setFontSize(18)
+        doc.setTextColor(128, 0, 0) // Maroon
+        doc.text('National Universities Commission (NUC)', 14, 20)
+        
+        doc.setFontSize(12)
+        doc.setTextColor(0, 0, 0)
+        doc.text('Institutional Accreditation Readiness Report', 14, 28)
+        
+        doc.setFontSize(10)
+        doc.setTextColor(100, 100, 100)
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 34)
+
+        // Generate Table Data
+        const tableBody = nucAssessments.map(a => [
+          a.department,
+          a.programName,
+          a.submittedBy?.name || 'Unknown',
+          a.readinessScore !== undefined && a.readinessScore !== null ? `${a.readinessScore}%` : 'Pending',
+          a.status.toUpperCase()
+        ])
+
+        if (tableBody.length === 0) {
+          tableBody.push([{ content: 'No NUC assessments submitted yet.', colSpan: 5, styles: { halign: 'center', textColor: [150, 150, 150] } }])
+        }
+
+        autoTable(doc, {
+          startY: 40,
+          head: [['Department', 'Program', 'HOD/Submitter', 'Compliance Score', 'Status']],
+          body: tableBody,
+          headStyles: { fillColor: [128, 0, 0] },
+          styles: { fontSize: 9 },
+          alternateRowStyles: { fillColor: [245, 245, 245] }
+        })
+
+        doc.save('NUC_Accreditation_Report.pdf')
+      } else if (type === 'institutional') {
+        // --- SERVICOM Institutional Self-Study Report ---
+        const ticketsResult = await ticketService.getTickets()
+        const tickets = ticketsResult?.data || ticketsResult || []
+        const chartersResult = await servicomService.getCharters()
+        const charters = Array.isArray(chartersResult) ? chartersResult : (chartersResult?.data || [])
+
+        const resolved = tickets.filter(t => t.status === 'resolved' || t.status === 'closed')
+        const rate = tickets.length > 0 ? ((resolved.length / tickets.length) * 100).toFixed(1) : '0.0'
+
+        const doc = new jsPDF()
+        doc.setFontSize(18)
+        doc.setTextColor(128, 0, 0)
+        doc.text('SERVICOM Institutional Self-Study Report', 14, 20)
+        doc.setFontSize(12)
+        doc.setTextColor(0, 0, 0)
+        doc.text('University of Lagos — Quality Assurance Ecosystem', 14, 28)
+        doc.setFontSize(10)
+        doc.setTextColor(100, 100, 100)
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 34)
+
+        // Summary
+        doc.setFontSize(13)
+        doc.setTextColor(0, 0, 0)
+        doc.text('Executive Summary', 14, 46)
+        doc.setFontSize(10)
+        doc.text(`Total Complaints Filed: ${tickets.length}`, 14, 54)
+        doc.text(`Resolved / Closed: ${resolved.length}`, 14, 60)
+        doc.text(`Resolution Rate: ${rate}%`, 14, 66)
+        doc.text(`Service Charters Published: ${charters.length}`, 14, 72)
+
+        // Charters table
+        const charterBody = charters.length > 0
+          ? charters.map(c => [
+              c.department,
+              `${c.slaHours || 48}h`,
+              Array.isArray(c.commitments) ? c.commitments.length : 0
+            ])
+          : [[{ content: 'No service charters published yet.', colSpan: 3, styles: { halign: 'center', textColor: [150, 150, 150] } }]]
+
+        autoTable(doc, {
+          startY: 80,
+          head: [['Department', 'SLA (hours)', 'Commitments']],
+          body: charterBody,
+          headStyles: { fillColor: [128, 0, 0] },
+          styles: { fontSize: 9 },
+          alternateRowStyles: { fillColor: [245, 245, 245] }
+        })
+
+        doc.save('SERVICOM_Institutional_Self_Study.pdf')
+
+      } else if (type === 'departmental') {
+        // --- SERVICOM Departmental Performance Review ---
+        const ticketsResult = await ticketService.getTickets()
+        const tickets = ticketsResult?.data || ticketsResult || []
+
+        // Group by category (department)
+        const deptMap = {}
+        tickets.forEach(t => {
+          const dept = t.category || 'Uncategorized'
+          if (!deptMap[dept]) deptMap[dept] = { total: 0, resolved: 0, pending: 0 }
+          deptMap[dept].total++
+          if (t.status === 'resolved' || t.status === 'closed') deptMap[dept].resolved++
+          else deptMap[dept].pending++
+        })
+
+        const doc = new jsPDF()
+        doc.setFontSize(18)
+        doc.setTextColor(128, 0, 0)
+        doc.text('SERVICOM Departmental Performance Review', 14, 20)
+        doc.setFontSize(12)
+        doc.setTextColor(0, 0, 0)
+        doc.text('Complaint Resolution by Department', 14, 28)
+        doc.setFontSize(10)
+        doc.setTextColor(100, 100, 100)
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 34)
+
+        const deptBody = Object.keys(deptMap).length > 0
+          ? Object.entries(deptMap).map(([dept, stats]) => [
+              dept,
+              stats.total,
+              stats.resolved,
+              stats.pending,
+              stats.total > 0 ? `${((stats.resolved / stats.total) * 100).toFixed(1)}%` : '0.0%'
+            ])
+          : [[{ content: 'No complaint data available.', colSpan: 5, styles: { halign: 'center', textColor: [150, 150, 150] } }]]
+
+        autoTable(doc, {
+          startY: 42,
+          head: [['Department', 'Total', 'Resolved', 'Pending', 'Resolution Rate']],
+          body: deptBody,
+          headStyles: { fillColor: [128, 0, 0] },
+          styles: { fontSize: 9 },
+          alternateRowStyles: { fillColor: [245, 245, 245] }
+        })
+
+        doc.save('SERVICOM_Departmental_Review.pdf')
+
+      } else if (type === 'compliance') {
+        // --- QA Compliance Report (NUC + NBTE) ---
+        const result = await qaService.getAllSelfAssessments()
+        const assessments = result?.data || result || []
+
+        const doc = new jsPDF()
+        doc.setFontSize(18)
+        doc.setTextColor(128, 0, 0)
+        doc.text('Quality Assurance Compliance Report', 14, 20)
+        doc.setFontSize(12)
+        doc.setTextColor(0, 0, 0)
+        doc.text('NUC & NBTE Accreditation Readiness Overview', 14, 28)
+        doc.setFontSize(10)
+        doc.setTextColor(100, 100, 100)
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 34)
+
+        const compBody = assessments.length > 0
+          ? assessments.map(a => [
+              a.department,
+              a.programName,
+              a.accreditationBody || 'N/A',
+              a.readinessScore !== undefined && a.readinessScore !== null ? `${a.readinessScore}%` : 'Pending',
+              (a.status || 'draft').toUpperCase()
+            ])
+          : [[{ content: 'No self-assessments submitted yet.', colSpan: 5, styles: { halign: 'center', textColor: [150, 150, 150] } }]]
+
+        autoTable(doc, {
+          startY: 42,
+          head: [['Department', 'Program', 'Accreditation Body', 'Readiness Score', 'Status']],
+          body: compBody,
+          headStyles: { fillColor: [128, 0, 0] },
+          styles: { fontSize: 9 },
+          alternateRowStyles: { fillColor: [245, 245, 245] }
+        })
+
+        doc.save('QA_Compliance_Report.pdf')
+
+      } else {
+        alert('Unknown report type.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert(`Error generating report: ${err.message || err}`)
+    } finally {
+      setGenerating(null)
+    }
   }
 
   return (

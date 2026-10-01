@@ -25,7 +25,7 @@ async function main() {
 
   const staff = await prisma.user.upsert({
     where: { email: 'staff@unilag.edu.ng' },
-    update: {},
+    update: { name: 'Dr. Adebayo' },
     create: {
       name: 'Dr. Adebayo',
       email: 'staff@unilag.edu.ng',
@@ -138,6 +138,41 @@ async function main() {
       suggestions: 'Lecturer talks too fast.',
       evaluatedById: student.id
     }
+  });
+
+  // 4. Create Peer Reviews
+  console.log('🤝 Creating peer reviews...');
+  const staff2 = await prisma.user.upsert({
+    where: { email: 'staff2@unilag.edu.ng' },
+    update: {},
+    create: {
+      name: 'Dr. Ojo',
+      email: 'staff2@unilag.edu.ng',
+      password: defaultPassword,
+      role: 'staff',
+      staffId: 'UNILAG/STF/103',
+      department: 'Computer Science',
+      faculty: 'Science'
+    }
+  });
+
+  await prisma.peerReview.createMany({
+    data: [
+      {
+        reviewerId: staff2.id,
+        revieweeId: staff.id,
+        courseCode: 'CSC 101',
+        scores: { methodology: 5, engagement: 4, clarity: 5 },
+        comments: 'Excellent command of the subject matter. The students were highly engaged during the practical session.'
+      },
+      {
+        reviewerId: admin.id,
+        revieweeId: staff.id,
+        courseCode: 'CSC 202',
+        scores: { methodology: 4, engagement: 4, clarity: 4 },
+        comments: 'Good overall performance, but could use more modern visual aids.'
+      }
+    ]
   });
 
   console.log('✅ Seed completed successfully!');

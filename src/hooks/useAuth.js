@@ -51,6 +51,8 @@ export function useAuth() {
   const isFaculty = role === ROLES.FACULTY
   const isAdmin = role === ROLES.ADMIN
   const isExternal = role === ROLES.EXTERNAL
+  const isStaff = role === 'staff'
+  const isNonStaff = role === 'non-staff'
 
   return {
     user,
@@ -68,5 +70,7 @@ export function useAuth() {
     isFaculty,
     isAdmin,
     isExternal,
+    isStaff,
+    isNonStaff
   }
 }

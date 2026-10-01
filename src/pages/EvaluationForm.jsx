@@ -19,13 +19,7 @@ const LIKERT_OPTIONS = [
   { value: 1, label: 'Strongly Disagree' },
 ]
 
-const QUESTIONS = [
-  'The lecturer communicates course content effectively.',
-  'The course materials are relevant and up-to-date.',
-  'The lecturer is available for consultation outside class.',
-  'Assessment methods are fair and transparent.',
-  'The overall quality of teaching in this course is excellent.',
-]
+
 
 function StarRating({ value, onChange, size = 'md' }) {
   const [hover, setHover] = useState(0)
@@ -58,29 +52,33 @@ export default function EvaluationForm() {
 
   const [evaluatedCodes, setEvaluatedCodes] = useState([])
   const [selectedCourse, setSelectedCourse] = useState(null)
+  const [questions, setQuestions] = useState([])
   
   useEffect(() => {
-    const fetchEvaluations = async () => {
+    const fetchData = async () => {
       try {
-        const codes = await evaluationService.getMyEvaluations()
-        if (Array.isArray(codes)) {
-          setEvaluatedCodes(codes)
-        }
+        const [codes, qs] = await Promise.all([
+          evaluationService.getMyEvaluations(),
+          evaluationService.getQuestions()
+        ])
+        if (Array.isArray(codes)) setEvaluatedCodes(codes)
+        if (Array.isArray(qs?.data)) setQuestions(qs.data)
       } catch (err) {
-        console.error('Failed to fetch evaluated courses', err)
+        console.error('Failed to fetch evaluation data', err)
       }
     }
-    fetchEvaluations()
+    fetchData()
   }, [])
+
   const [likert, setLikert] = useState({})
   const [openEnded, setOpenEnded] = useState({ likes: '', suggestions: '' })
   const [overallRating, setOverallRating] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  const totalQuestions = QUESTIONS.length + 1 // likert + overall
+  const totalQuestions = questions.length + 1 // likert + overall
   const answeredQuestions = Object.keys(likert).length + (overallRating > 0 ? 1 : 0)
-  const progress = Math.round((answeredQuestions / totalQuestions) * 100)
+  const progress = totalQuestions > 1 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0
 
   const handleSubmit = async () => {
     setSubmitting(true)
@@ -247,9 +245,9 @@ export default function EvaluationForm() {
       <div className="bg-paper rounded-2xl border border-mist/50 p-5 mb-4">
         <h2 className="text-[14px] font-bold text-ink mb-5">Rate the following statements</h2>
         <div className="space-y-5">
-          {QUESTIONS.map((q, i) => (
-            <div key={i}>
-              <p className="text-[13px] text-ink/70 mb-3 leading-relaxed">{i + 1}. {q}</p>
+          {questions.map((q, i) => (
+            <div key={q.id}>
+              <p className="text-[13px] text-ink/70 mb-3 leading-relaxed">{i + 1}. {q.text}</p>
               <div className="flex gap-2 flex-wrap">
                 {LIKERT_OPTIONS.map(opt => (
                   <button

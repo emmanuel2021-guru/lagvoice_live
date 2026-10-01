@@ -1,0 +1,24 @@
+{
+  "NUC": [
+    { "id": "nuc1", "text": "Curriculum adheres to Core Curriculum and Minimum Academic Standards (CCMAS)?" },
+    { "id": "nuc2", "text": "Academic Staff to Student ratio does not exceed 1:30?" },
+    { "id": "nuc3", "text": "Minimum of 70% of academic staff possess a Ph.D.?" },
+    { "id": "nuc4", "text": "Adequate physical facilities (lecture theaters, equipped laboratories) exist for cohort size?" },
+    { "id": "nuc5", "text": "University library contains contemporary physical and e-resources for the specific discipline?" },
+    { "id": "nuc6", "text": "Evidence of consistent external moderation of examinations?" }
+  ],
+  "NBTE": [
+    { "id": "nbte1", "text": "Curriculum reflects a 70:30 ratio of Practical/Hands-on to Theoretical instruction?" },
+    { "id": "nbte2", "text": "Workshops and studios have modern, industry-standard equipment?" },
+    { "id": "nbte3", "text": "Students actively participate in the Supervised Industrial Work Experience Scheme (SIWES)?" },
+    { "id": "nbte4", "text": "Staff possess requisite professional certifications/memberships?" },
+    { "id": "nbte5", "text": "Adequate consumable materials are provided for practical examinations?" },
+    { "id": "nbte6", "text": "Health and Safety protocols are strictly enforced in all workshop areas?" }
+  ],
+  "INTERNAL": [
+    { "id": "int1", "text": "Departmental committee records and minutes are up to date?" },
+    { "id": "int2", "text": "Student feedback forms have been administered and analyzed for the current semester?" },
+    { "id": "int3", "text": "Faculty attendance and lecture punctuality meet university guidelines?" },
+    { "id": "int4", "text": "Course outlines were distributed to students within the first two weeks of resumption?" }
+  ]
+}

@@ -14,6 +14,7 @@ const ROLES = [
   { id: 'staff', label: 'Staff' },
   { id: 'non-staff', label: 'Non-Staff' },
   { id: 'admin', label: 'Administrator' },
+  { id: 'hod', label: 'HOD / Dean' },
 ]
 
 /* ── Inline validation message (stable module-level component) ── */
@@ -201,7 +202,12 @@ export default function AuthPage() {
     e.preventDefault()
     const result = await login(form.email, form.password, form.role)
     if (result?.meta?.requestStatus === 'fulfilled') {
-      navigate(`/${result.payload?.user?.role || form.role}`)
+      const userRole = result.payload?.user?.role || form.role
+      if (userRole === 'hod' || userRole === 'dean') {
+        navigate('/staff')
+      } else {
+        navigate(`/${userRole}`)
+      }
     }
   }
 
@@ -212,7 +218,12 @@ export default function AuthPage() {
       role: form.role,
     })
     if (result?.meta?.requestStatus === 'fulfilled') {
-      navigate(`/${result.payload?.user?.role || form.role}`)
+      const userRole = result.payload?.user?.role || form.role
+      if (userRole === 'hod' || userRole === 'dean') {
+        navigate('/staff')
+      } else {
+        navigate(`/${userRole}`)
+      }
     }
   }
 
@@ -257,6 +268,42 @@ export default function AuthPage() {
             <p className="text-ink/40 text-[13px] sm:text-[14px] mb-5 sm:mb-6 leading-relaxed">
               Sign in to access the UNILAG Quality Assurance platform.
             </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                setForm(prev => ({ ...prev, email: 'student@unilag.edu.ng', password: 'password123', role: 'student' }))
+              }}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-white border border-mist/80 hover:bg-mist/30 transition-colors mb-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] group"
+            >
+              <div className="w-6 h-6 rounded-md bg-maroon/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg className="w-4 h-4 text-maroon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                </svg>
+              </div>
+              <span className="text-[13px] font-bold text-ink">Sign in with LMS</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setForm(prev => ({ ...prev, email: 'hod@unilag.edu.ng', password: 'password123', role: 'hod' }))
+              }}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-white border border-mist/80 hover:bg-mist/30 transition-colors mb-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)] group"
+            >
+              <div className="w-6 h-6 rounded-md bg-[#1976D2]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg className="w-4 h-4 text-[#1976D2]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-[13px] font-bold text-ink">Sign in as HOD/Dean</span>
+            </button>
+            
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex-1 h-px bg-mist/60" />
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-ink/30">Or use email</span>
+              <div className="flex-1 h-px bg-mist/60" />
+            </div>
 
             <form onSubmit={handleLogin} className="space-y-3.5">
               {/* Role */}
@@ -411,26 +458,6 @@ export default function AuthPage() {
               </button>
             </form>
 
-            {/* Divider */}
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-mist/50" /></div>
-              <div className="relative flex justify-center">
-                <span className="bg-[#F5F0EB] px-3 text-[11px] text-ink/25 uppercase tracking-[0.15em] font-medium">or</span>
-              </div>
-            </div>
-
-            {/* SSO */}
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-mist/70 rounded-xl
-                text-[14px] text-ink/50 hover:text-ink hover:border-ink/15 hover:bg-white hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]
-                transition-all duration-200 font-medium group"
-            >
-              <svg className="w-4 h-4 text-maroon group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
-              </svg>
-              Continue with UNILAG SSO
-            </button>
 
             {/* Sign up link */}
             <p className="mt-5 text-center text-[13px] text-ink/35">
