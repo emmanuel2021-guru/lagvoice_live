@@ -4,8 +4,22 @@ const prisma = new PrismaClient();
 exports.getPolls = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    
+    // Filter logic for students
+    let whereClause = {};
+    if (req.user.role === 'student') {
+      whereClause = {
+        OR: [
+          { target: 'All Students' },
+          { target: req.user.faculty },
+          { target: req.user.department }
+        ]
+      };
+    }
+
     // We fetch all polls and attach the user's response if any
     const polls = await prisma.poll.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' }
     });
 
@@ -83,3 +97,26 @@ exports.submitResponse = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.createPoll = async (req, res, next) => {
+  try {
+    const { title, description, target, deadline, options } = req.body;
+    const poll = await prisma.poll.create({
+      data: {
+        title,
+        description,
+        target,
+        deadline: new Date(deadline),
+        options,
+        status: 'active',
+        
+      }
+    });
+    res.status(201).json({ success: true, data: poll });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+

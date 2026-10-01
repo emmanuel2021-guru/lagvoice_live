@@ -2,7 +2,8 @@
  * AdminPolls — Targeted Polls & Surveys
  * Create, manage, and view poll results
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { pollService } from '../services/pollService'
 
 export default function AdminPolls() {
   const [activeTab, setActiveTab] = useState('active')
@@ -10,10 +11,73 @@ export default function AdminPolls() {
   const [targetAudience, setTargetAudience] = useState('All Students')
   const [specificTarget, setSpecificTarget] = useState('')
 
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [deadline, setDeadline] = useState('')
+  const [options, setOptions] = useState(['', ''])
+  
+  const [polls, setPolls] = useState([])
+  const [loading, setLoading] = useState(true)
+
   const faculties = ['Science', 'Arts', 'Engineering', 'Social Sciences']
   const departments = ['Computer Science', 'Mathematics', 'Physics', 'History', 'Economics']
 
-  const polls = []
+  const fetchPolls = async () => {
+    try {
+      const res = await pollService.getPolls()
+      setPolls(Array.isArray(res) ? res : [])
+    } catch (err) {
+      console.error('Failed to fetch polls:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPolls()
+  }, [])
+
+  const handleCreatePoll = async () => {
+    if (!title || !description || !deadline || options.some(o => !o)) {
+      alert('Please fill out all fields and options.')
+      return
+    }
+    
+    let finalTarget = targetAudience
+    if (targetAudience !== 'All Students') {
+      if (!specificTarget) {
+        alert('Please select a specific target.')
+        return
+      }
+      finalTarget = specificTarget
+    }
+
+    try {
+      await pollService.createPoll({
+        title,
+        description,
+        target: finalTarget,
+        deadline,
+        options
+      })
+      setShowCreate(false)
+      setTitle('')
+      setDescription('')
+      setDeadline('')
+      setOptions(['', ''])
+      setTargetAudience('All Students')
+      setSpecificTarget('')
+      fetchPolls()
+    } catch (err) {
+      console.error(err)
+      alert('Failed to create poll.')
+    }
+  }
+
+  const filteredPolls = polls.filter(poll => {
+    if (activeTab === 'all') return true
+    return poll.status === activeTab
+  })
 
   return (
     <div className="space-y-6">
@@ -41,12 +105,48 @@ export default function AdminPolls() {
           <div className="space-y-4">
             <div>
               <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Title</label>
-              <input placeholder="e.g., Academic Calendar Feedback" className="w-full px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 transition-all" />
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Academic Calendar Feedback" className="w-full px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 transition-all" />
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Description</label>
-              <textarea placeholder="What is this poll about?" rows={2} className="w-full px-4 py-3 text-[13px] rounded-xl bg-cream border border-mist/50 text-ink placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 transition-all resize-none" />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What is this poll about?" rows={2} className="w-full px-4 py-3 text-[13px] rounded-xl bg-cream border border-mist/50 text-ink placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 transition-all resize-none" />
             </div>
+
+            {/* Options UI */}
+            <div>
+              <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Poll Options</label>
+              <div className="space-y-2">
+                {options.map((opt, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input 
+                      value={opt} 
+                      onChange={(e) => {
+                        const newOpts = [...options]
+                        newOpts[i] = e.target.value
+                        setOptions(newOpts)
+                      }} 
+                      placeholder={`Option ${i + 1}`} 
+                      className="flex-1 px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink placeholder:text-ink/25 focus:outline-none focus:ring-2 focus:ring-maroon/15 transition-all" 
+                    />
+                    {options.length > 2 && (
+                      <button 
+                        onClick={() => setOptions(options.filter((_, idx) => idx !== i))}
+                        className="px-4 rounded-xl border border-mist/50 text-maroon hover:bg-mist/30"
+                      >
+                        X
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button 
+                  onClick={() => setOptions([...options, ''])}
+                  className="text-[12px] font-semibold text-[#1266f1] hover:underline"
+                >
+                  + Add another option
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Target Audience</label>
@@ -65,7 +165,7 @@ export default function AdminPolls() {
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-ink/40 uppercase tracking-[0.15em] mb-2">Deadline</label>
-                <input type="date" className="w-full px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink focus:outline-none focus:ring-2 focus:ring-maroon/15 transition-all" />
+                <input value={deadline} onChange={(e) => setDeadline(e.target.value)} type="date" className="w-full px-4 py-3 text-[14px] rounded-xl bg-cream border border-mist/50 text-ink focus:outline-none focus:ring-2 focus:ring-maroon/15 transition-all" />
               </div>
             </div>
 
@@ -91,7 +191,7 @@ export default function AdminPolls() {
 
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowCreate(false)} className="flex-1 py-3 rounded-xl border border-mist/70 text-ink/60 font-semibold text-[13px] hover:bg-cream transition-all">Cancel</button>
-              <button className="flex-1 py-3 rounded-xl bg-maroon text-white font-semibold text-[13px] shadow-[0_2px_8px_rgba(128,0,0,0.2)] hover:bg-maroon-dark transition-all">Create Poll</button>
+              <button onClick={handleCreatePoll} className="flex-1 py-3 rounded-xl bg-maroon text-white font-semibold text-[13px] shadow-[0_2px_8px_rgba(128,0,0,0.2)] hover:bg-maroon-dark transition-all">Create Poll</button>
             </div>
           </div>
         </div>
@@ -99,28 +199,31 @@ export default function AdminPolls() {
 
       {/* Tabs */}
       <div className="flex gap-2">
-        {['active', 'closed', 'all'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
-              activeTab === tab ? 'bg-maroon text-white shadow-sm' : 'bg-paper border border-mist/50 text-ink/40 hover:text-ink/60'
-            }`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)} {tab !== 'all' && `(0)`}
-          </button>
-        ))}
+        {['active', 'closed', 'all'].map(tab => {
+          const count = tab === 'all' ? 0 : polls.filter(p => p.status === tab).length;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
+                activeTab === tab ? 'bg-maroon text-white shadow-sm' : 'bg-paper border border-mist/50 text-ink/40 hover:text-ink/60'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)} {tab !== 'all' && `(${count})`}
+            </button>
+          )
+        })}
       </div>
 
       {/* Polls */}
       <div className="space-y-4">
-        {polls.length === 0 ? (
+        {filteredPolls.length === 0 ? (
           <div className="text-center py-12 bg-paper rounded-2xl border border-mist/50">
             <p className="text-[14px] text-ink/40 font-medium">No polls found.</p>
           </div>
         ) : (
-          polls.map(poll => {
-            const maxResult = Math.max(...poll.results)
+          filteredPolls.map(poll => {
+            const maxResult = poll.results ? Math.max(...poll.results) : 0
           return (
             <div key={poll.id} className="bg-paper rounded-2xl border border-mist/50 p-6">
               <div className="flex items-start justify-between mb-4">
@@ -136,7 +239,7 @@ export default function AdminPolls() {
                   <p className="text-[13px] text-ink/40">{poll.description}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-[1.2rem] font-bold text-ink font-mono">{poll.responses}</p>
+                  <p className="text-[1.2rem] font-bold text-ink font-mono">{poll.totalResponses}</p>
                   <p className="text-[10px] text-ink/25">responses</p>
                 </div>
               </div>
@@ -144,8 +247,10 @@ export default function AdminPolls() {
               {/* Results */}
               <div className="space-y-2">
                 {poll.options.map((opt, i) => {
-                  const pct = Math.round((poll.results[i] / poll.responses) * 100)
-                  const isMax = poll.results[i] === maxResult
+                  const resultCount = poll.results ? poll.results[i] : 0
+                  const totalResponses = poll.totalResponses || 1 // prevent div by zero
+                  const pct = poll.totalResponses ? Math.round((resultCount / poll.totalResponses) * 100) : 0
+                  const isMax = resultCount === maxResult && resultCount > 0
                   return (
                     <div key={i}>
                       <div className="flex items-center justify-between text-[12px] mb-1">

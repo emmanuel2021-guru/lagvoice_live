@@ -62,7 +62,7 @@ export default function EvaluationForm() {
           evaluationService.getQuestions()
         ])
         if (Array.isArray(codes)) setEvaluatedCodes(codes)
-        if (Array.isArray(qs?.data)) setQuestions(qs.data)
+        if (Array.isArray(qs)) setQuestions(qs)
       } catch (err) {
         console.error('Failed to fetch evaluation data', err)
       }
@@ -308,7 +308,7 @@ export default function EvaluationForm() {
       {/* Submit */}
       <button
         onClick={handleSubmit}
-        disabled={answeredQuestions < 2 || submitting}
+        disabled={answeredQuestions < totalQuestions || submitting}
         className="w-full py-4 rounded-xl bg-maroon text-white font-bold text-[15px] shadow-[0_4px_14px_rgba(128,0,0,0.25)] hover:bg-maroon-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {submitting ? (

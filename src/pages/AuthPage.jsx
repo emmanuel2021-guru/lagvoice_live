@@ -203,11 +203,7 @@ export default function AuthPage() {
     const result = await login(form.email, form.password, form.role)
     if (result?.meta?.requestStatus === 'fulfilled') {
       const userRole = result.payload?.user?.role || form.role
-      if (userRole === 'hod' || userRole === 'dean') {
-        navigate('/staff')
-      } else {
-        navigate(`/${userRole}`)
-      }
+      navigate(`/${userRole}`)
     }
   }
 

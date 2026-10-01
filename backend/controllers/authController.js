@@ -72,7 +72,9 @@ exports.login = async (req, res, next) => {
     }
 
     if (role && user.role !== role) {
-      return res.status(401).json({ success: false, message: 'Invalid role for this user' });
+      if (!(role === 'hod' && user.role === 'dean')) {
+        return res.status(401).json({ success: false, message: 'Invalid role for this user' });
+      }
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
