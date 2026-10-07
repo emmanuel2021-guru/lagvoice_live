@@ -36,7 +36,10 @@ const NonStaffPolls = lazy(() => import('./pages/NonStaffPolls'))
 const NonStaffMemos = lazy(() => import('./pages/NonStaffMemos'))
 const FacultyPeerReview = lazy(() => import('./pages/FacultyPeerReview'))
 const SupervisoryAssessment = lazy(() => import('./pages/SupervisoryAssessment'))
-const HodSelfAssessment = lazy(() => import('./pages/HodSelfAssessment')); const HodDashboard = lazy(() => import('./pages/HodDashboard')); const DeanDashboard = lazy(() => import('./pages/DeanDashboard'));
+const HodSelfAssessment = lazy(() => import('./pages/HodSelfAssessment'))
+const HodDashboard = lazy(() => import('./pages/HodDashboard'))
+const DeanDashboard = lazy(() => import('./pages/DeanDashboard'))
+const HrDashboard = lazy(() => import('./pages/HrDashboard'))
 import StaffLayout from './components/common/Layout/StaffLayout'
 
 // Loading fallback
@@ -93,10 +96,27 @@ export default function App() {
         />
           <Route path="/hod" element={<ProtectedRoute allowedRoles={['hod']}><StaffLayout><HodDashboard /></StaffLayout></ProtectedRoute>} />
           <Route path="/dean" element={<ProtectedRoute allowedRoles={['dean']}><StaffLayout><DeanDashboard /></StaffLayout></ProtectedRoute>} />
+        {/* HR Routes */}
+        <Route
+          path="/hr"
+          element={
+            <ProtectedRoute allowedRoles={['hr']}>
+              <StaffLayout><HrDashboard /></StaffLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hr/*"
+          element={
+            <ProtectedRoute allowedRoles={['hr']}>
+              <StaffLayout><HrDashboard /></StaffLayout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/staff/inbox"
           element={
-            <ProtectedRoute allowedRoles={['staff', 'non-staff', 'hod', 'dean']}>
+            <ProtectedRoute allowedRoles={['staff', 'non-staff', 'hod', 'dean', 'hr']}>
               <StaffLayout><SecureInbox /></StaffLayout>
             </ProtectedRoute>
           }
@@ -104,7 +124,7 @@ export default function App() {
         <Route
           path="/staff/ticket/:id"
           element={
-            <ProtectedRoute allowedRoles={['staff', 'non-staff', 'hod', 'dean']}>
+            <ProtectedRoute allowedRoles={['staff', 'non-staff', 'hod', 'dean', 'hr']}>
               <StaffLayout><TicketDetail /></StaffLayout>
             </ProtectedRoute>
           }

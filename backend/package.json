@@ -8,7 +8,7 @@
     "dev": "nodemon index.js",
     "build": "prisma generate",
     "seed": "node seed.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +26,9 @@
     "nodemailer": "^9.1.0"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.14",
-    "prisma": "^5.22.0"
+    "prisma": "^5.22.0",
+    "supertest": "^6.3.4"
   }
 }

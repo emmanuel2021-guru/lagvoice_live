@@ -21,7 +21,11 @@ export const registerUser = createAsyncThunk(
       const response = await authService.register(userData)
       return response
     } catch (error) {
-      return rejectWithValue(error.message || 'Registration failed')
+      const payload = {
+        message: error.message || 'Registration failed',
+        code: error.code || (error.message?.toLowerCase().includes('already exists') ? 'USER_EXISTS' : undefined),
+      }
+      return rejectWithValue(payload)
     }
   }
 )
@@ -87,13 +91,20 @@ const authSlice = createSlice({
         state.loading = true
         state.error = null
       })
-      .addCase(registerUser.fulfilled, (state) => {
+      .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false
+        state.user = action.payload.user
+        state.token = action.payload.token
+        state.role = action.payload.user?.role || action.payload.role
+        state.isAuthenticated = true
+        state.error = null
         state.registrationStep = 1
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload
+        state.error = typeof action.payload === 'object' && action.payload !== null
+          ? action.payload.message
+          : action.payload
       })
   },
 })

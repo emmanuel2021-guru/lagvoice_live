@@ -14,15 +14,33 @@ export function useAuth() {
   )
 
   const login = useCallback(
-    (email, password, role) => dispatch(loginUser({ email, password, role })),
+    async (email, password, role) => {
+      const resultAction = await dispatch(loginUser({ email, password, role }))
+      if (loginUser.rejected.match(resultAction)) {
+        throw new Error(resultAction.payload || 'Login failed')
+      }
+      return resultAction.payload
+    },
     [dispatch]
   )
 
   const register = useCallback(
     async (userData) => {
-      const resultAction = await dispatch(registerUser({ ...userData, name: `${userData.firstName} ${userData.lastName}` }))
+      const name = userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim()
+      const payload = {
+        ...userData,
+        name,
+        ...(userData.role !== ROLES.STUDENT && !userData.staffId && userData.studentId ? { staffId: userData.studentId } : {})
+      }
+      const resultAction = await dispatch(registerUser(payload))
       if (registerUser.rejected.match(resultAction)) {
-        throw new Error(resultAction.payload)
+        const payload = resultAction.payload
+        const msg = typeof payload === 'object' && payload !== null ? payload.message : payload || 'Registration failed'
+        const err = new Error(msg)
+        if (typeof payload === 'object' && payload !== null && payload.code) {
+          err.code = payload.code
+        }
+        throw err
       }
       return resultAction.payload
     },
@@ -51,8 +69,11 @@ export function useAuth() {
   const isFaculty = role === ROLES.FACULTY
   const isAdmin = role === ROLES.ADMIN
   const isExternal = role === ROLES.EXTERNAL
-  const isStaff = role === 'staff'
-  const isNonStaff = role === 'non-staff'
+  const isStaff = role === ROLES.STAFF
+  const isNonStaff = role === ROLES.NON_STAFF
+  const isHod = role === ROLES.HOD
+  const isDean = role === ROLES.DEAN
+  const isHr = role === ROLES.HR
 
   return {
     user,
@@ -63,6 +84,7 @@ export function useAuth() {
     error,
     login,
     registerUser: register,
+    register,
     updateProfile,
     logout: logoutUser,
     clearError: clearAuthError,
@@ -71,6 +93,9 @@ export function useAuth() {
     isAdmin,
     isExternal,
     isStaff,
-    isNonStaff
+    isNonStaff,
+    isHod,
+    isDean,
+    isHr
   }
 }

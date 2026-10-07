@@ -5,12 +5,25 @@
 
 // Route paths
 export const ROUTES = {
+  HOME: '/',
   LOGIN: '/login',
   REGISTER: '/register',
   FORGOT_PASSWORD: '/forgot-password',
   STUDENT_DASHBOARD: '/student',
+  STAFF_DASHBOARD: '/staff',
+  NON_STAFF_DASHBOARD: '/non-staff',
   ADMIN_DASHBOARD: '/admin',
   FACULTY_DASHBOARD: '/faculty',
+  HOD_DASHBOARD: '/hod',
+  DEAN_DASHBOARD: '/dean',
+  HR_DASHBOARD: '/hr',
+  STAFF_INBOX: '/staff/inbox',
+  STAFF_PEER_REVIEW: '/staff/peer-review',
+  STAFF_SUPERVISORY: '/staff/supervisory',
+  STAFF_SELF_ASSESSMENT: '/staff/self-assessment',
+  HR_STAFF: '/hr/staff',
+  HR_APPRAISALS: '/hr/appraisals',
+  HR_GRIEVANCES: '/hr/grievances',
   FEEDBACK_SUBMIT: '/student/feedback',
   TICKET_DETAIL: '/student/ticket/:id',
   TICKETS_LIST: '/student/tickets',
@@ -26,6 +39,9 @@ export const ROLES = {
   STAFF: 'staff',
   NON_STAFF: 'non-staff',
   EXTERNAL: 'external',
+  HOD: 'hod',
+  DEAN: 'dean',
+  HR: 'hr',
 }
 
 // Feedback categories with icons and colors

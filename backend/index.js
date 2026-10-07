@@ -32,6 +32,7 @@ app.use('/api/supervisory', require('./routes/supervisoryRoutes'));
 app.use('/api/qa', require('./routes/qaRoutes'));
 app.use('/api/servicom', require('./routes/servicomRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
+app.use('/api/hr', require('./routes/hrRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -42,18 +43,22 @@ app.get('/api/health', (req, res) => {
 const frontendPath = path.join(__dirname, '../dist');
 app.use(express.static(frontendPath));
 
-// Fallback to index.html for SPA routing (Express 5 regex)
-app.get(/(.*)/, (req, res) => {
+// Fallback to index.html for SPA routing
+app.use((req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // Error handling middleware
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 
-  // Start background escalation cron job
-  const { startEscalationJob } = require('./services/escalationService');
-  startEscalationJob();
-});
+    // Start background escalation cron job
+    const { startEscalationJob } = require('./services/escalationService');
+    startEscalationJob();
+  });
+}
+
+module.exports = app;

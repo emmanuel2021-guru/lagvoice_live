@@ -33,7 +33,12 @@ api.interceptors.response.use(
           window.location.href = '/login'
         }
       }
-      return Promise.reject(new Error(data?.message || `Request failed (${status})`))
+      const err = new Error(data?.message || `Request failed (${status})`)
+      if (data?.code) err.code = data.code
+      else if (status === 400 && data?.message?.toLowerCase().includes('already exists')) err.code = 'USER_EXISTS'
+      err.status = status
+      err.response = error.response
+      return Promise.reject(err)
     }
     if (error.request) {
       return Promise.reject(new Error('Network error. Please check your connection.'))

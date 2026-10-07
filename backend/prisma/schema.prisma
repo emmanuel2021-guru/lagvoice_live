@@ -12,11 +12,12 @@ model User {
   name       String
   email      String    @unique
   password   String
-  role       String    // student, faculty, admin
+  role       String    // student, faculty, admin, hr, staff, non-staff, hod, dean
   studentId  String?
   staffId    String?
   department String?
   faculty    String?
+  status     String    @default("active") // active, on_leave, probation, suspended, inactive
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
@@ -38,6 +39,10 @@ model User {
   updatedCharters     ServiceCharter[] @relation("CharterUpdater")
   sentMessages        InternalMessage[] @relation("SentMessages")
   receivedMessages    InternalMessage[] @relation("ReceivedMessages")
+
+  @@index([department])
+  @@index([role])
+  @@index([department, role])
 }
 
 model NotificationPreference {
@@ -64,6 +69,7 @@ model Ticket {
   status      String    @default("pending")
   pipelineStep String   @default("submitted") // New field for detailed tracking
   location    String?
+  department  String?
   isAnonymous Boolean   @default(false)
   slaDeadline DateTime?
   images      String?   // JSON string of paths or comma separated
@@ -75,6 +81,11 @@ model Ticket {
 
   comments    Comment[]
   timeline    TicketTimeline[]
+
+  @@index([department])
+  @@index([category])
+  @@index([status])
+  @@index([submittedById])
 }
 
 model TicketTimeline {
@@ -123,6 +134,8 @@ model Evaluation {
   updatedAt     DateTime @updatedAt
   
   @@unique([courseCode, evaluatedById]) // A user can only evaluate a course once
+  @@index([department])
+  @@index([lecturer])
 }
 
 model Poll {
@@ -164,12 +177,19 @@ model PeerReview {
   reviewee      User     @relation("Reviewee", fields: [revieweeId], references: [id])
   revieweeId    Int
 
+  department    String?
+  status        String   @default("completed") // pending, completed
   courseCode    String?
   scores        Json     // Object containing rubric scores
   comments      String?
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([reviewerId])
+  @@index([revieweeId])
+  @@index([department])
+  @@index([status])
 }
 
 model SupervisoryAssessment {
@@ -181,14 +201,18 @@ model SupervisoryAssessment {
   staff         User     @relation("SupervisedStaff", fields: [staffId], references: [id])
   staffId       Int
 
+  department    String?
   context       String?
-  scores        Json     // Object containing rubric scores
+  scores        Json     // Object intelligence rubric scores
   remarks       String?
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-}
 
+  @@index([supervisorId])
+  @@index([staffId])
+  @@index([department])
+}
 
 model QaChecklist {
   id           Int      @id @default(autoincrement())
@@ -200,6 +224,8 @@ model QaChecklist {
   notes        String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([department])
 }
 
 model SelfAssessment {
@@ -214,6 +240,8 @@ model SelfAssessment {
   status          String   @default("submitted") 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([department])
 }
 
 model ServiceCharter {
@@ -237,4 +265,7 @@ model InternalMessage {
   recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
   isRead      Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  @@index([senderId])
+  @@index([recipientId])
 }

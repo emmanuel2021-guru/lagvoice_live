@@ -1,88 +1,31 @@
 /**
- * StudentLayout — Desktop: animated icon-only rail, Mobile: bottom nav
- * Dark mode support with toggle
+ * StudentLayout — Desktop: animated expanded sidebar, Mobile: bottom nav
+ * Dark mode support with toggle, search hotkey, and shared modal
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../hooks/useAuth'
 import { useDarkModeToggle } from '../../../hooks/useDarkMode'
 import NotificationBell from '../NotificationBell/NotificationBell'
+import NavIcon from '../NavIcon'
+import LogoutModal from '../LogoutModal'
 
-const navItems = [
-  { label: 'Home', path: '/student', icon: (
-    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2" />
-    </svg>
-  )},
-  { label: 'Feedback', path: '/student/feedback', icon: (
-    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-    </svg>
-  )},
-  { label: 'Tickets', path: '/student/tickets', icon: (
-    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-    </svg>
-  )},
-  { label: 'Evaluate', path: '/student/evaluations', icon: (
-    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-    </svg>
-  )},
-  { label: 'Polls', path: '/student/polls', icon: (
-    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-    </svg>
-  )},
-  { label: 'Profile', path: '/student/profile', icon: (
-    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-  )},
+export const studentNavItems = [
+  { label: 'Home', path: '/student', icon: 'home' },
+  { label: 'Feedback', path: '/student/feedback', icon: 'feedback' },
+  { label: 'Tickets', path: '/student/tickets', icon: 'tickets' },
+  { label: 'Evaluate', path: '/student/evaluations', icon: 'star' },
+  { label: 'Polls', path: '/student/polls', icon: 'chart' },
+  { label: 'Profile', path: '/student/profile', icon: 'profile' },
 ]
-
-/* ── Logout Confirmation Modal ── */
-function LogoutModal({ open, onConfirm, onCancel }) {
-  if (!open) return null
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Confirm logout">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-[380px] p-8 animate-slide-in-up border border-[#E4E8EE] dark:border-white/10">
-        <div className="w-14 h-14 rounded-2xl bg-[#f93154]/10 flex items-center justify-center mx-auto mb-5">
-          <svg className="w-7 h-7 text-[#f93154]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
-          </svg>
-        </div>
-        <h3 className="text-[18px] font-bold text-[#262626] dark:text-white text-center mb-2">Log out?</h3>
-        <p className="text-[13px] text-[#9fa6b2] text-center mb-7 leading-relaxed">
-          You will be signed out of your account and redirected to the login page.
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-3 rounded-xl border border-[#E4E8EE] dark:border-white/10 text-[14px] font-semibold text-[#4f4f4f] dark:text-white/70
-              hover:bg-[#F5F7FA] dark:hover:bg-white/5 transition-all duration-200"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-3 rounded-xl bg-[#f93154] text-white text-[14px] font-semibold
-              hover:bg-[#d42843] active:scale-[0.98] transition-all duration-200
-              shadow-[0_4px_14px_rgba(249,49,84,0.25)]"
-          >
-            Log out
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function StudentLayout({ children }) {
   const [showLogout, setShowLogout] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [darkMode, toggleDark] = useDarkModeToggle()
   const [sidebarReady, setSidebarReady] = useState(false)
+  const searchInputRef = useRef(null)
+
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
@@ -91,6 +34,18 @@ export default function StudentLayout({ children }) {
   useEffect(() => {
     const t = setTimeout(() => setSidebarReady(true), 100)
     return () => clearTimeout(t)
+  }, [])
+
+  // Global hotkey: press '/' to focus search input
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   const handleLogout = () => setShowLogout(true)
@@ -106,113 +61,102 @@ export default function StudentLayout({ children }) {
 
       {/* ═══ Desktop Sidebar — animated entry ═══ */}
       <aside className={`
-        hidden lg:flex fixed inset-y-0 left-0 z-50 w-[72px] bg-[#1E1B4B] flex-col items-center
+        hidden lg:flex fixed inset-y-0 left-0 z-50 w-64 bg-[#1E1B4B] flex-col shrink-0
         transition-all duration-700 ease-out
         ${sidebarReady ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'}
       `}>
-        {/* Logo */}
-        <div className="w-full flex justify-center pt-6 pb-4">
-          <div className="w-11 h-11 rounded-2xl overflow-hidden" style={{
+        {/* Logo and Brand */}
+        <div className="flex items-center gap-3 px-5 pt-6 pb-5 border-b border-white/10 shrink-0">
+          <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 shadow-sm" style={{
             animation: sidebarReady ? 'sidebar-logo-glow 1.5s ease-out forwards' : 'none',
           }}>
             <img src="/images/logo-n.png" alt="LagVoice" className="w-full h-full object-cover" />
           </div>
+          <div className="flex flex-col min-w-0">
+            <span className="text-white font-bold text-[17px] tracking-tight leading-tight truncate">LagVoice</span>
+            <span className="text-white/40 text-[11px] font-medium tracking-wider uppercase truncate">Student Portal</span>
+          </div>
         </div>
 
-        {/* Nav icons with staggered entrance */}
-        <nav className="flex-1 flex flex-col items-center gap-1 py-4" aria-label="Student navigation">
-          {navItems.map((item, i) => (
+        {/* Nav items with staggered entrance */}
+        <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto no-scrollbar" aria-label="Student navigation">
+          {studentNavItems.map((item, i) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `group relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                `group flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 w-full ${
                   sidebarReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
                 } ${
                   isActive
                     ? darkMode
                       ? 'bg-white text-[#1E1B4B] shadow-[0_0_20px_rgba(96,140,255,0.45)] ring-1 ring-white/30 sidebar-active-glow'
-                      : 'bg-white text-[#1E1B4B] shadow-lg shadow-black/20'
+                      : 'bg-white text-[#1E1B4B] shadow-md shadow-black/10'
                     : darkMode
                       ? 'text-white/60 hover:text-white hover:bg-white/12'
-                      : 'text-white/40 hover:text-white/70 hover:bg-white/8'
+                      : 'text-white/60 hover:text-white hover:bg-white/8'
                 }`
               }
               style={{ transitionDelay: sidebarReady ? `${200 + i * 60}ms` : '0ms' }}
               end={item.path === '/student'}
-              title={item.label}
             >
-              {item.icon}
-              <span className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E1B4B] text-white text-[12px] font-medium rounded-lg
-                opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[70] shadow-lg border border-white/10">
-                {item.label}
+              <span className="shrink-0">
+                <NavIcon icon={item.icon} />
               </span>
+              <span className="font-medium text-sm truncate">{item.label}</span>
             </NavLink>
           ))}
         </nav>
 
-        {/* Bottom icons */}
-        <div className="flex flex-col items-center gap-1 pb-6">
+        {/* Bottom actions */}
+        <div className="flex flex-col gap-1 px-3 pb-6 pt-3 border-t border-white/10 shrink-0">
           {/* Dark mode toggle */}
           <button
             onClick={toggleDark}
-            className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 group ${
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 w-full text-left ${
               sidebarReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
-            } ${darkMode ? 'text-yellow-300 bg-white/12' : 'text-white/40 hover:text-white/70 hover:bg-white/8'}`}
-            style={{ transitionDelay: sidebarReady ? `${200 + navItems.length * 60}ms` : '0ms' }}
+            } ${darkMode ? 'text-yellow-300 hover:text-yellow-200 hover:bg-white/10' : 'text-white/60 hover:text-white hover:bg-white/8'}`}
+            style={{ transitionDelay: sidebarReady ? `${200 + studentNavItems.length * 60}ms` : '0ms' }}
             aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            {darkMode ? (
-              <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            ) : (
-              <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            )}
-            <span className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E1B4B] text-white text-[12px] font-medium rounded-lg
-              opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[70] shadow-lg border border-white/10">
+            <span className="shrink-0">
+              <NavIcon icon={darkMode ? 'sun' : 'moon'} />
+            </span>
+            <span className="font-medium text-sm truncate">
               {darkMode ? 'Light mode' : 'Dark mode'}
             </span>
           </button>
           <button
-            className={`relative w-11 h-11 rounded-xl flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/8 transition-all duration-200 group ${
+            onClick={() => navigate('/student/profile')}
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/8 transition-all duration-200 w-full text-left ${
               sidebarReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
             }`}
-            style={{ transitionDelay: sidebarReady ? `${200 + (navItems.length + 1) * 60}ms` : '0ms' }}
+            style={{ transitionDelay: sidebarReady ? `${200 + (studentNavItems.length + 1) * 60}ms` : '0ms' }}
             aria-label="Settings"
           >
-            <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
-            <span className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E1B4B] text-white text-[12px] font-medium rounded-lg
-              opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[70] shadow-lg border border-white/10">
-              Settings
+            <span className="shrink-0">
+              <NavIcon icon="settings" />
             </span>
+            <span className="font-medium text-sm truncate">Settings</span>
           </button>
           <button
             onClick={handleLogout}
-            className={`relative w-11 h-11 rounded-xl flex items-center justify-center text-white/40 hover:text-red-400 hover:bg-white/8 transition-all duration-200 group ${
+            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 w-full text-left ${
               sidebarReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
             }`}
-            style={{ transitionDelay: sidebarReady ? `${200 + (navItems.length + 2) * 60}ms` : '0ms' }}
+            style={{ transitionDelay: sidebarReady ? `${200 + (studentNavItems.length + 2) * 60}ms` : '0ms' }}
             aria-label="Log out"
           >
-            <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
-            </svg>
-            <span className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E1B4B] text-white text-[12px] font-medium rounded-lg
-              opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[70] shadow-lg border border-white/10">
-              Log out
+            <span className="shrink-0">
+              <NavIcon icon="logout" />
             </span>
+            <span className="font-medium text-sm truncate">Log out</span>
           </button>
         </div>
       </aside>
 
       {/* ═══ Main Content ═══ */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-[72px]">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
         {/* Top bar */}
         <header className={`h-[68px] px-4 sm:px-6 shrink-0 transition-colors duration-300 ${
           darkMode ? 'bg-[#1e293b] border-b border-white/5' : 'bg-white border-b border-[#1266f1]/10'
@@ -226,7 +170,7 @@ export default function StudentLayout({ children }) {
               </div>
               <div className="hidden lg:block">
                 <h2 className={`text-[17px] font-bold tracking-tight leading-tight ${darkMode ? 'text-white' : 'text-[#262626]'}`}>
-                  {navItems.find((i) => i.path === location.pathname)?.label || 'Home'}
+                  {studentNavItems.find((i) => i.path === location.pathname)?.label || 'Home'}
                 </h2>
                 <p className={`text-[11px] ${darkMode ? 'text-white/40' : 'text-[#9fa6b2]'}`}>
                   {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
@@ -235,7 +179,7 @@ export default function StudentLayout({ children }) {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Search */}
+              {/* Search with hotkey */}
               <div className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors w-56 ${
                 darkMode ? 'bg-[#0f172a] border-white/10 hover:border-white/20' : 'bg-[#F5F7FA] border-[#1266f1]/8 hover:border-[#1266f1]/20'
               }`}>
@@ -243,12 +187,16 @@ export default function StudentLayout({ children }) {
                   <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
                 </svg>
                 <input
+                  ref={searchInputRef}
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search anything..."
                   className={`bg-transparent border-none text-[13px] focus:outline-none w-full placeholder:text-[#9fa6b2] ${darkMode ? 'text-white' : 'text-[#4f4f4f]'}`}
                   aria-label="Search"
                 />
-                <kbd className={`text-[10px] bg-white border rounded px-1.5 py-0.5 font-mono shrink-0 ${darkMode ? 'text-white/30 border-white/10' : 'text-[#9fa6b2] border-[#1266f1]/10'}`}>/</kbd>
+                {/* TODO: Implement search query filtering/modal logic */}
+                <kbd className={`text-[10px] border rounded px-1.5 py-0.5 font-mono shrink-0 ${darkMode ? 'text-white/30 border-white/10 bg-transparent' : 'text-[#9fa6b2] border-[#1266f1]/10 bg-white'}`}>/</kbd>
               </div>
 
               <div className={`w-px h-6 hidden md:block ${darkMode ? 'bg-white/10' : 'bg-[#1266f1]/8'}`} />
@@ -297,7 +245,7 @@ export default function StudentLayout({ children }) {
         darkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-[#E4E8EE]'
       }`} aria-label="Student navigation" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="flex items-stretch px-1 py-1.5">
-          {navItems.map((item) => (
+          {studentNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -312,7 +260,7 @@ export default function StudentLayout({ children }) {
               }
               end={item.path === '/student'}
             >
-              {item.icon}
+              <NavIcon icon={item.icon} />
               <span className="text-[9px] font-medium leading-tight truncate max-w-full">{item.label}</span>
             </NavLink>
           ))}

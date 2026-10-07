@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "start": "node backend/index.js"
+    "start": "node backend/index.js",
+    "test": "npx vitest run src/__tests__ src/features/auth src/pages"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",
